@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  logistic_db:
+    image: postgres:15-alpine
+    container_name: logistic_db
+    environment:
+      POSTGRES_USER: logistic_user
+      POSTGRES_PASSWORD: logistic_pass
+      POSTGRES_DB: logistic_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U logistic_user -d logistic_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - logistic_network
+
+  logistic_redis:
+    image: redis:7-alpine
+    container_name: logistic_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - logistic_network
+
+  backend:
+    build: ./backend
+    container_name: logistic_backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://logistic_user:logistic_pass@logistic_db:5432/logistic_db
+      - REDIS_URL=redis://logistic_redis:6379/0
+    depends_on:
+      logistic_db:
+        condition: service_healthy
+      logistic_redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    networks:
+      - logistic_network
+    command: sh start.sh
+
+  bot:
+    build: ./telegram-bot
+    container_name: logistic_bot
+    env_file:
+      - .env
+    environment:
+      - BACKEND_URL=http://backend:8000
+      - REDIS_URL=redis://logistic_redis:6379/1
+    depends_on:
+      - backend
+      - logistic_redis
+    volumes:
+      - ./telegram-bot:/app
+    networks:
+      - logistic_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  logistic_network:
+    driver: bridge

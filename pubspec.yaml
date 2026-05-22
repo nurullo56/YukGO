@@ -1,0 +1,41 @@
+name: yukgo_flutter
+description: YukGo - AI-powered logistics app
+publish_to: 'none'
+version: 1.0.0+3
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # UI
+  google_fonts: ^6.1.0
+  
+  # Icons
+  flutter_svg: ^2.0.9
+  
+  # Navigation
+  go_router: ^14.0.0
+  
+  # Utils
+  intl: ^0.18.1
+  dio: ^5.9.2
+
+  # Telegram auth
+  url_launcher: ^6.3.0
+  app_links: ^6.3.0
+
+  # Local storage
+  shared_preferences: ^2.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  assets:
+    - shorebird.yaml
+  uses-material-design: true

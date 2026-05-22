@@ -1,0 +1,293 @@
+import 'package:flutter/material.dart';
+import 'package:yukgo_flutter/core/theme/app_theme.dart';
+import 'package:yukgo_flutter/core/utils/user_session.dart';
+import 'package:yukgo_flutter/core/widgets/app_bottom_nav.dart';
+import 'package:yukgo_flutter/features/profile/widgets/payment_methods_sheet.dart';
+import 'package:yukgo_flutter/features/profile/widgets/language_sheet.dart';
+
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool get isDarkMode => UserSession.darkMode.value;
+
+  Color get bgColor => isDarkMode ? const Color(0xFF0A0E1A) : AppTheme.background;
+  Color get cardColor => isDarkMode ? const Color(0xFF151B2E) : Colors.white;
+  Color get textPrimary => isDarkMode ? Colors.white : Colors.black;
+  Color get textSecondary => isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600;
+  Color get iconColor => AppTheme.primary;
+
+  @override
+  void initState() {
+    super.initState();
+    UserSession.darkMode.addListener(_onThemeChange);
+  }
+
+  @override
+  void dispose() {
+    UserSession.darkMode.removeListener(_onThemeChange);
+    super.dispose();
+  }
+
+  void _onThemeChange() => setState(() {});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: bgColor,
+      bottomNavigationBar: const AppBottomNav(currentIndex: 4),
+      body: CustomScrollView(
+        slivers: [
+          // App Bar with Profile Header
+          SliverAppBar(
+            expandedHeight: 200,
+            pinned: true,
+            backgroundColor: isDarkMode ? const Color(0xFF1A1F3A) : AppTheme.primary,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDarkMode 
+                        ? [const Color(0xFF1A1F3A), const Color(0xFF0A0E27)]
+                        : [AppTheme.primary, AppTheme.primary.withOpacity(0.8)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 40),
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
+                      child: Icon(Icons.person, size: 50, color: iconColor),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      '${UserSession.firstName} ${UserSession.lastName}'.trim().isEmpty
+                          ? 'Foydalanuvchi'
+                          : '${UserSession.firstName} ${UserSession.lastName}'.trim(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      UserSession.phone.isEmpty ? '+998 -- --- -- --' : UserSession.phone,
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        UserSession.isYukchi ? '📦 Yukchi' : '🚚 Furachi',
+                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          
+          // Settings List
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _SettingsSection(
+                    title: 'Akkaunt',
+                    isDarkMode: isDarkMode,
+                    cardColor: cardColor,
+                    textSecondary: textSecondary,
+                    iconColor: iconColor,
+                    textPrimary: textPrimary,
+                    items: [
+                      _SettingsItem(Icons.person_outline, 'Shaxsiy ma\'lumotlar', () {}, 
+                          iconColor: iconColor, textColor: textPrimary),
+                      _SettingsItem(Icons.verified_user_outlined, 'Verifikatsiya', () {}, 
+                          iconColor: iconColor, textColor: textPrimary),
+                      _SettingsItem(Icons.credit_card, 'To\'lov usullari', () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (_) => const PaymentMethodsSheet(),
+                          );
+                        },
+                          iconColor: iconColor, textColor: textPrimary),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _SettingsSection(
+                    title: 'Sozlamalar',
+                    isDarkMode: isDarkMode,
+                    cardColor: cardColor,
+                    textSecondary: textSecondary,
+                    iconColor: iconColor,
+                    textPrimary: textPrimary,
+                    items: [
+                      _SettingsItem(Icons.notifications_outlined, 'Bildirishnomalar', () {}, 
+                          iconColor: iconColor, textColor: textPrimary),
+                      ValueListenableBuilder<String>(
+                        valueListenable: UserSession.language,
+                        builder: (context, lang, _) {
+                          final flags = {'uz': '🇺🇿', 'ru': '🇷🇺', 'en': '🇬🇧'};
+                          return _SettingsItem(
+                            Icons.language,
+                            'Til  ${flags[lang]}',
+                            () => showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (_) => const LanguageSheet(),
+                            ),
+                            iconColor: iconColor,
+                            textColor: textPrimary,
+                          );
+                        },
+                      ),
+                      _SettingsItem(
+                        isDarkMode ? Icons.light_mode : Icons.dark_mode_outlined,
+                        'Tungi rejim',
+                        () => UserSession.darkMode.value = !UserSession.darkMode.value,
+                        iconColor: isDarkMode ? Colors.amber : iconColor,
+                        textColor: textPrimary,
+                        trailing: Switch(
+                          value: isDarkMode,
+                          onChanged: (value) => UserSession.darkMode.value = value,
+                          activeThumbColor: AppTheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _SettingsSection(
+                    title: 'Yordam',
+                    isDarkMode: isDarkMode,
+                    cardColor: cardColor,
+                    textSecondary: textSecondary,
+                    iconColor: iconColor,
+                    textPrimary: textPrimary,
+                    items: [
+                      _SettingsItem(Icons.help_outline, 'Yordam markazi', () {}, 
+                          iconColor: iconColor, textColor: textPrimary),
+                      _SettingsItem(Icons.description_outlined, 'Foydalanish shartlari', () {}, 
+                          iconColor: iconColor, textColor: textPrimary),
+                      _SettingsItem(Icons.privacy_tip_outlined, 'Maxfiylik', () {}, 
+                          iconColor: iconColor, textColor: textPrimary),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  OutlinedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.logout, color: Colors.red),
+                    label: const Text('Chiqish', style: TextStyle(color: Colors.red)),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.red.shade200),
+                      backgroundColor: isDarkMode ? Colors.red.withOpacity(0.1) : null,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Versiya 1.0.0',
+                    style: TextStyle(color: textSecondary, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsSection extends StatelessWidget {
+  final String title;
+  final List<Widget> items;
+  final bool isDarkMode;
+  final Color cardColor;
+  final Color textSecondary;
+  final Color iconColor;
+  final Color textPrimary;
+
+  const _SettingsSection({
+    required this.title,
+    required this.items,
+    required this.isDarkMode,
+    required this.cardColor,
+    required this.textSecondary,
+    required this.iconColor,
+    required this.textPrimary,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16, bottom: 12),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: textSecondary,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(16),
+            border: isDarkMode 
+                ? Border.all(color: Colors.grey.shade800, width: 1)
+                : null,
+          ),
+          child: Column(children: items),
+        ),
+      ],
+    );
+  }
+}
+
+class _SettingsItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+  final Color iconColor;
+  final Color textColor;
+  final Widget? trailing;
+
+  const _SettingsItem(
+    this.icon,
+    this.title,
+    this.onTap, {
+    required this.iconColor,
+    required this.textColor,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: iconColor),
+      title: Text(title, style: TextStyle(color: textColor)),
+      trailing: trailing ?? const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+      onTap: onTap,
+    );
+  }
+}

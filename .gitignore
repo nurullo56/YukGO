@@ -1,0 +1,73 @@
+# ─── Flutter/Dart ────────────────────────────────────────────────────────────
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+*.class
+*.log
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+*.iml
+*.ipr
+*.iws
+.idea/
+app.*.symbols
+app.*.map.json
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# ─── Secrets & Environment ───────────────────────────────────────────────────
+.env
+.env.local
+.env.production
+**/.env
+**/.env.local
+**/.env.production
+!**/.env.example
+
+# ─── Python / Backend ────────────────────────────────────────────────────────
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+env/
+*.egg-info/
+dist/
+*.so
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Alembic
+backend/alembic/versions/*.pyc
+
+# ─── Telegram Bot ────────────────────────────────────────────────────────────
+telegram-bot/venv/
+telegram-bot/.venv/
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── OS ──────────────────────────────────────────────────────────────────────
+Thumbs.db
+Desktop.ini
