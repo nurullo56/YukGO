@@ -82,6 +82,7 @@ class UserResponse(BaseModel):
     truck_type: Optional[str] = None
     capacity: Optional[str] = None
     from_city: Optional[str] = None
+    to_routes: Optional[str] = None
     cargo_type: Optional[str] = None
     is_active: bool
     created_at: datetime

@@ -3,13 +3,10 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:yukgo_flutter/core/services/token_storage.dart';
 
 class ApiService {
-  static String get _baseUrl {
-    if (kIsWeb) return 'http://localhost:8000/api/v1';
-    return 'http://192.168.1.4:8000/api/v1'; // WiFi IP - real Android device
-  }
+  static const String _baseUrl = 'https://api.smart-tools.uk/api/v1';
 
   static final Dio _dio = Dio(BaseOptions(
-    baseUrl: kIsWeb ? 'http://localhost:8000/api/v1' : 'http://192.168.1.4:8000/api/v1',
+    baseUrl: _baseUrl,
     connectTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 10),
     headers: {'Content-Type': 'application/json'},
@@ -41,6 +38,11 @@ class ApiService {
     final resp = await _dio.patch('/auth/profile',
         data: data, options: await _authOptions());
     return resp.data as Map<String, dynamic>;
+  }
+
+  static Future<List<dynamic>> getDrivers() async {
+    final resp = await _dio.get('/auth/drivers', options: await _authOptions());
+    return resp.data as List<dynamic>;
   }
 
   static Future<Map<String, dynamic>> verifyCode(String code) async {

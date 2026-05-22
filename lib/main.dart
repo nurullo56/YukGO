@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:app_links/app_links.dart';
 import 'package:yukgo_flutter/core/theme/app_theme.dart';
 import 'package:yukgo_flutter/core/utils/user_session.dart';
@@ -11,7 +11,7 @@ import 'package:yukgo_flutter/features/auth/screens/basic_info_screen.dart';
 import 'package:yukgo_flutter/features/auth/screens/furachi_setup_screen.dart';
 import 'package:yukgo_flutter/features/auth/screens/yukchi_setup_screen.dart';
 import 'package:yukgo_flutter/features/auth/screens/role_selection_screen.dart';
-import 'package:yukgo_flutter/features/chat/screens/ai_chat_screen.dart';
+import 'package:yukgo_flutter/features/yukchi/screens/yukchi_home_screen.dart';
 import 'package:yukgo_flutter/features/profile/profile_screen.dart';
 import 'package:yukgo_flutter/features/driver/screens/order_detail_screen.dart';
 import 'package:yukgo_flutter/features/shipper/screens/driver_list_screen.dart';
@@ -40,7 +40,7 @@ Route<dynamic> _generateRoute(RouteSettings s) {
     '/basic-info':      (_) => const BasicInfoScreen(role: 'yukchi'),
     '/furachi-setup':   (_) => const FurachiSetupScreen(),
     '/yukchi-setup':    (_) => const YukchiSetupScreen(),
-    '/ai-chat':         (_) => const AIChatScreen(),
+    '/ai-chat':         (_) => const YukchiHomeScreen(),
     '/furachi-home':    (_) => const FurachiHomeScreen(),
     '/driver-list':     (_) => const DriverListScreen(),
     '/driver-profile':  (_) => const DriverProfileScreen(),
@@ -110,7 +110,7 @@ class _YukGoAppState extends State<YukGoApp> {
           nav.pushAndRemoveUntil(
             MaterialPageRoute(
               builder: (_) => UserSession.isYukchi
-                  ? const AIChatScreen()
+                  ? const YukchiHomeScreen()
                   : const FurachiHomeScreen(),
             ),
             (_) => false,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:yukgo_flutter/core/theme/app_theme.dart';
@@ -8,7 +8,7 @@ import 'package:yukgo_flutter/core/services/api_service.dart';
 import 'package:yukgo_flutter/core/services/token_storage.dart';
 import 'package:yukgo_flutter/core/services/telegram_auth_service.dart';
 import 'package:yukgo_flutter/features/auth/screens/role_selection_screen.dart';
-import 'package:yukgo_flutter/features/chat/screens/ai_chat_screen.dart';
+import 'package:yukgo_flutter/features/yukchi/screens/yukchi_home_screen.dart';
 import 'package:yukgo_flutter/features/furachi/screens/furachi_home_screen.dart';
 
 class TelegramOtpScreen extends StatefulWidget {
@@ -85,7 +85,7 @@ class _TelegramOtpScreenState extends State<TelegramOtpScreen> {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
             builder: (_) => UserSession.isYukchi
-                ? const AIChatScreen()
+                ? const YukchiHomeScreen()
                 : const FurachiHomeScreen(),
           ),
           (_) => false,
@@ -134,7 +134,7 @@ class _TelegramOtpScreenState extends State<TelegramOtpScreen> {
               ),
               const SizedBox(height: 20),
 
-              Text("Telegram kodi 🔐", style: GoogleFonts.inter(
+              Text("Telegram kodi рџ”ђ", style: GoogleFonts.inter(
                 fontSize: 26, fontWeight: FontWeight.w800, color: context.textPrimary,
               )),
               const SizedBox(height: 8),
@@ -160,7 +160,7 @@ class _TelegramOtpScreenState extends State<TelegramOtpScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        "Bot da «📱 Telefon raqamni yuborish» tugmasini bosing → kod keladi",
+                        "Bot da В«рџ“± Telefon raqamni yuborishВ» tugmasini bosing в†’ kod keladi",
                         style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF229ED9)),
                       ),
                     ),
@@ -298,3 +298,4 @@ class _OtpBox extends StatelessWidget {
     );
   }
 }
+

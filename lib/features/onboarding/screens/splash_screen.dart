@@ -1,11 +1,11 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:yukgo_flutter/core/theme/app_theme.dart';
 import 'package:yukgo_flutter/core/services/token_storage.dart';
 import 'package:yukgo_flutter/core/services/api_service.dart';
 import 'package:yukgo_flutter/core/utils/user_session.dart';
 import 'package:yukgo_flutter/features/onboarding/screens/onboarding_screen.dart';
-import 'package:yukgo_flutter/features/chat/screens/ai_chat_screen.dart';
+import 'package:yukgo_flutter/features/yukchi/screens/yukchi_home_screen.dart';
 import 'package:yukgo_flutter/features/furachi/screens/furachi_home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -40,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
         if (!mounted) return;
         if (!isComplete) {
-          // Profil to'ldirilmagan → role selection
+          // Profil to'ldirilmagan в†’ role selection
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const OnboardingScreen()),
           );
@@ -51,18 +51,18 @@ class _SplashScreenState extends State<SplashScreen> {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => UserSession.isYukchi
-                ? const AIChatScreen()
+                ? const YukchiHomeScreen()
                 : const FurachiHomeScreen(),
           ),
         );
         return;
       } catch (_) {
-        // Token eskirgan yoki xato → tozalash
+        // Token eskirgan yoki xato в†’ tozalash
         await TokenStorage.clear();
       }
     }
 
-    // Token yo'q → onboarding
+    // Token yo'q в†’ onboarding
     if (mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const OnboardingScreen()),

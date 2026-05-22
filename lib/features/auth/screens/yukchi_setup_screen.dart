@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:yukgo_flutter/core/theme/app_theme.dart';
 import 'package:yukgo_flutter/core/theme/theme_ext.dart';
@@ -6,7 +6,7 @@ import 'package:yukgo_flutter/core/utils/user_session.dart';
 import 'package:yukgo_flutter/core/services/api_service.dart';
 import 'package:yukgo_flutter/features/auth/widgets/step_indicator.dart';
 import 'package:yukgo_flutter/features/auth/widgets/select_chip.dart';
-import 'package:yukgo_flutter/features/chat/screens/ai_chat_screen.dart';
+import 'package:yukgo_flutter/features/yukchi/screens/yukchi_home_screen.dart';
 
 class YukchiSetupScreen extends StatefulWidget {
   const YukchiSetupScreen({super.key});
@@ -66,7 +66,7 @@ class _YukchiSetupScreenState extends State<YukchiSetupScreen> {
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const AIChatScreen()),
+      MaterialPageRoute(builder: (_) => const YukchiHomeScreen()),
       (_) => false,
     );
   }
@@ -101,13 +101,13 @@ class _YukchiSetupScreenState extends State<YukchiSetupScreen> {
                     const SizedBox(height: 32),
 
                     Row(children: [
-                      const Text("📦", style: TextStyle(fontSize: 32)),
+                      const Text("рџ“¦", style: TextStyle(fontSize: 32)),
                       const SizedBox(width: 12),
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text("Yuk ma'lumotlari", style: GoogleFonts.inter(
                           fontSize: 22, fontWeight: FontWeight.w800, color: context.textPrimary,
                         )),
-                        Text("Bir marta to'ldiring — keyingi buyurtmalarda tez bo'ladi",
+                        Text("Bir marta to'ldiring вЂ” keyingi buyurtmalarda tez bo'ladi",
                           style: GoogleFonts.inter(fontSize: 12, color: context.textMuted, height: 1.4)),
                       ])),
                     ]),
@@ -172,7 +172,7 @@ class _YukchiSetupScreenState extends State<YukchiSetupScreen> {
                   ),
                   child: _loading
                       ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                      : Text("Ro'yxatdan o'tish ✓", style: GoogleFonts.inter(
+                      : Text("Ro'yxatdan o'tish вњ“", style: GoogleFonts.inter(
                     fontSize: 16, fontWeight: FontWeight.w700)),
                 ),
               ),
@@ -187,3 +187,4 @@ class _YukchiSetupScreenState extends State<YukchiSetupScreen> {
     fontSize: 14, fontWeight: FontWeight.w700, color: context.textPrimary,
   ));
 }
+

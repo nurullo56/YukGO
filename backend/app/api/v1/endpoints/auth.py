@@ -127,6 +127,25 @@ async def get_me(
         )
 
 
+@router.get("/drivers", response_model=list[UserResponse])
+async def list_drivers(
+    authorization: str = Header(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """Yukchi uchun: furachi ro'yxati"""
+    from sqlalchemy import select as sa_select
+    from app.db.models.user import User as UserModel
+    try:
+        if not authorization.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Invalid token")
+        await AuthService.get_current_user(authorization[7:], db)
+        stmt = sa_select(UserModel).where(UserModel.role == "furachi", UserModel.is_active == True)
+        result = await db.execute(stmt)
+        return result.scalars().all()
+    except AuthError as e:
+        raise HTTPException(status_code=401, detail=e.message)
+
+
 @router.patch("/profile", response_model=UserResponse)
 async def setup_profile(
     request: ProfileSetupRequest,
