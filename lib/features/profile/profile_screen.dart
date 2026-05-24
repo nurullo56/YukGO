@@ -4,6 +4,8 @@ import 'package:yukgo_flutter/core/utils/user_session.dart';
 import 'package:yukgo_flutter/core/widgets/app_bottom_nav.dart';
 import 'package:yukgo_flutter/features/profile/widgets/payment_methods_sheet.dart';
 import 'package:yukgo_flutter/features/profile/widgets/language_sheet.dart';
+import 'package:yukgo_flutter/features/profile/widgets/notifications_sheet.dart';
+import 'package:yukgo_flutter/features/profile/screens/edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -25,15 +27,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     UserSession.darkMode.addListener(_onThemeChange);
+    UserSession.notifications.addListener(_onNotifChange);
   }
 
   @override
   void dispose() {
     UserSession.darkMode.removeListener(_onThemeChange);
+    UserSession.notifications.removeListener(_onNotifChange);
     super.dispose();
   }
 
   void _onThemeChange() => setState(() {});
+  void _onNotifChange() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +119,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     iconColor: iconColor,
                     textPrimary: textPrimary,
                     items: [
-                      _SettingsItem(Icons.person_outline, 'Shaxsiy ma\'lumotlar', () {}, 
+                      _SettingsItem(Icons.person_outline, 'Shaxsiy ma\'lumotlar', () async {
+                          await Navigator.push(context, MaterialPageRoute(
+                            builder: (_) => const EditProfileScreen(),
+                          ));
+                          if (mounted) setState(() {});
+                        },
                           iconColor: iconColor, textColor: textPrimary),
                       _SettingsItem(Icons.verified_user_outlined, 'Verifikatsiya', () {}, 
                           iconColor: iconColor, textColor: textPrimary),
@@ -130,44 +140,90 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _SettingsSection(
-                    title: 'Sozlamalar',
-                    isDarkMode: isDarkMode,
-                    cardColor: cardColor,
-                    textSecondary: textSecondary,
-                    iconColor: iconColor,
-                    textPrimary: textPrimary,
-                    items: [
-                      _SettingsItem(Icons.notifications_outlined, 'Bildirishnomalar', () {}, 
-                          iconColor: iconColor, textColor: textPrimary),
-                      ValueListenableBuilder<String>(
-                        valueListenable: UserSession.language,
-                        builder: (context, lang, _) {
-                          final flags = {'uz': '🇺🇿', 'ru': '🇷🇺', 'en': '🇬🇧'};
-                          return _SettingsItem(
-                            Icons.language,
-                            'Til  ${flags[lang]}',
-                            () => showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (_) => const LanguageSheet(),
-                            ),
-                            iconColor: iconColor,
-                            textColor: textPrimary,
-                          );
-                        },
+                  // Sozlamalar section - inline build to avoid wrapper issues
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16, bottom: 12),
+                        child: Text('Sozlamalar',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textSecondary)),
                       ),
-                      _SettingsItem(
-                        isDarkMode ? Icons.light_mode : Icons.dark_mode_outlined,
-                        'Tungi rejim',
-                        () => UserSession.darkMode.value = !UserSession.darkMode.value,
-                        iconColor: isDarkMode ? Colors.amber : iconColor,
-                        textColor: textPrimary,
-                        trailing: Switch(
-                          value: isDarkMode,
-                          onChanged: (value) => UserSession.darkMode.value = value,
-                          activeThumbColor: AppTheme.primary,
+                      Container(
+                        decoration: BoxDecoration(
+                          color: cardColor,
+                          borderRadius: BorderRadius.circular(16),
+                          border: isDarkMode ? Border.all(color: Colors.grey.shade800) : null,
+                        ),
+                        child: Column(
+                          children: [
+                            // Bildirishnomalar — custom Row (ListTile ishlatilmaydi)
+                            InkWell(
+                              onTap: () => showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (_) => const NotificationsSheet(),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.notifications_outlined, color: iconColor, size: 24),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Text('Bildirishnomalar',
+                                          style: TextStyle(color: textPrimary, fontSize: 16)),
+                                    ),
+                                    Switch(
+                                      value: UserSession.notifications.value,
+                                      onChanged: (v) {
+                                        UserSession.notifications.value = v;
+                                        showModalBottomSheet(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          backgroundColor: Colors.transparent,
+                                          builder: (_) => const NotificationsSheet(),
+                                        );
+                                      },
+                                      activeColor: AppTheme.primary,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            // Til
+                            ValueListenableBuilder<String>(
+                              valueListenable: UserSession.language,
+                              builder: (context, lang, _) {
+                                final flags = {'uz': '🇺🇿', 'ru': '🇷🇺', 'en': '🇬🇧'};
+                                return _SettingsItem(
+                                  Icons.language,
+                                  'Til  ${flags[lang]}',
+                                  () => showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (_) => const LanguageSheet(),
+                                  ),
+                                  iconColor: iconColor,
+                                  textColor: textPrimary,
+                                );
+                              },
+                            ),
+                            // Tungi rejim
+                            SwitchListTile(
+                              secondary: Icon(
+                                isDarkMode ? Icons.light_mode : Icons.dark_mode_outlined,
+                                color: isDarkMode ? Colors.amber : iconColor,
+                              ),
+                              title: Text('Tungi rejim', style: TextStyle(color: textPrimary)),
+                              value: isDarkMode,
+                              onChanged: (v) => UserSession.darkMode.value = v,
+                              activeColor: AppTheme.primary,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                            ),
+                          ],
                         ),
                       ),
                     ],

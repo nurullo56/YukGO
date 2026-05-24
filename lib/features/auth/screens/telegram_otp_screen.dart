@@ -134,7 +134,7 @@ class _TelegramOtpScreenState extends State<TelegramOtpScreen> {
               ),
               const SizedBox(height: 20),
 
-              Text("Telegram kodi рџ”ђ", style: GoogleFonts.inter(
+              Text(“Telegram kodi 🔑”, style: GoogleFonts.inter(
                 fontSize: 26, fontWeight: FontWeight.w800, color: context.textPrimary,
               )),
               const SizedBox(height: 8),
@@ -160,7 +160,7 @@ class _TelegramOtpScreenState extends State<TelegramOtpScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        "Bot da В«рџ“± Telefon raqamni yuborishВ» tugmasini bosing в†’ kod keladi",
+                        “Bot da «📱 Telefon raqamni yuborish» tugmasini bosing → kod keladi”,
                         style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF229ED9)),
                       ),
                     ),
@@ -256,7 +256,7 @@ class _OtpBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RawKeyboardListener(
-      focusNode: FocusNode(),
+      focusNode: node,
       onKey: onKey,
       child: SizedBox(
         width: 46, height: 56,

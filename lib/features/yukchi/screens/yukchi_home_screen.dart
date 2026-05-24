@@ -6,6 +6,7 @@ import 'package:yukgo_flutter/core/utils/user_session.dart';
 import 'package:yukgo_flutter/core/services/api_service.dart';
 import 'package:yukgo_flutter/core/widgets/app_bottom_nav.dart';
 import 'package:yukgo_flutter/core/widgets/auth_guard.dart';
+import 'package:yukgo_flutter/features/map/screens/route_map_screen.dart';
 
 class YukchiHomeScreen extends StatefulWidget {
   const YukchiHomeScreen({super.key});
@@ -18,6 +19,7 @@ class _YukchiHomeScreenState extends State<YukchiHomeScreen> {
   String _selectedCity = 'Barchasi';
   String _searchQuery = '';
   List<Map<String, dynamic>> _drivers = [];
+  List<Map<String, dynamic>> _myOrders = [];
   bool _loading = true;
   String? _error;
 
@@ -26,20 +28,38 @@ class _YukchiHomeScreenState extends State<YukchiHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadDrivers();
+    _loadData();
   }
 
-  Future<void> _loadDrivers() async {
+  Future<void> _loadData() async {
     setState(() { _loading = true; _error = null; });
     try {
-      final data = await ApiService.getDrivers();
+      final results = await Future.wait([
+        ApiService.getDrivers(),
+        ApiService.getMyOrders(),
+      ]);
       setState(() {
-        _drivers = data.cast<Map<String, dynamic>>();
+        _drivers = results[0].cast<Map<String, dynamic>>();
+        _myOrders = results[1]
+            .cast<Map<String, dynamic>>()
+            .where((o) => o['status'] == 'accepted')
+            .toList();
         _loading = false;
       });
     } catch (e) {
       setState(() { _error = 'Furachlarni yuklashda xato'; _loading = false; });
     }
+  }
+
+  void _openChat(Map<String, dynamic> order) {
+    final furachi = order['furachi'];
+    final furachiName = furachi != null
+        ? '${furachi['first_name'] ?? ''} ${furachi['last_name'] ?? ''}'.trim()
+        : 'Furachi';
+    Navigator.pushNamed(context, '/chat', arguments: {
+      'roomId': 'order_${order['id']}',
+      'otherName': furachiName.isEmpty ? 'Furachi' : furachiName,
+    });
   }
 
   List<Map<String, dynamic>> get _filtered {
@@ -82,16 +102,33 @@ class _YukchiHomeScreenState extends State<YukchiHomeScreen> {
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Text(_error!, style: GoogleFonts.inter(color: context.textMuted)),
         const SizedBox(height: 12),
-        ElevatedButton(onPressed: _loadDrivers, child: const Text('Qayta urinish')),
+        ElevatedButton(onPressed: _loadData, child: const Text('Qayta urinish')),
       ]),
     );
-    if (_filtered.isEmpty) return _buildEmpty(context);
     return RefreshIndicator(
-      onRefresh: _loadDrivers,
-      child: ListView.builder(
+      onRefresh: _loadData,
+      child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        itemCount: _filtered.length,
-        itemBuilder: (_, i) => _DriverCard(data: _filtered[i]),
+        children: [
+          // Faol buyurtmalar
+          if (_myOrders.isNotEmpty) ...[
+            Text('Faol buyurtmalarim',
+                style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: context.textMuted)),
+            const SizedBox(height: 8),
+            ..._myOrders.map((o) => _ActiveOrderCard(
+              data: o,
+              onChat: () => _openChat(o),
+            )),
+            const SizedBox(height: 8),
+            Divider(color: context.divColor),
+            const SizedBox(height: 8),
+          ],
+          // Furachi drivers
+          if (_filtered.isEmpty)
+            _buildEmpty(context)
+          else
+            ..._filtered.map((d) => _DriverCard(data: d)),
+        ],
       ),
     );
   }
@@ -174,13 +211,70 @@ class _YukchiHomeScreenState extends State<YukchiHomeScreen> {
   }
 
   Widget _buildEmpty(BuildContext context) {
-    return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Icon(Icons.local_shipping_outlined, size: 64, color: context.textMuted),
-      const SizedBox(height: 16),
-      Text('Furachi topilmadi', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: context.textPrimary)),
-      const SizedBox(height: 8),
-      Text('Hozircha furachi ro\'yxatdan o\'tmagan', style: GoogleFonts.inter(fontSize: 14, color: context.textMuted)),
-    ]));
+    return Center(child: Padding(
+      padding: const EdgeInsets.only(top: 40),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(Icons.local_shipping_outlined, size: 64, color: context.textMuted),
+        const SizedBox(height: 16),
+        Text('Furachi topilmadi', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: context.textPrimary)),
+        const SizedBox(height: 8),
+        Text('Hozircha furachi ro\'yxatdan o\'tmagan', style: GoogleFonts.inter(fontSize: 14, color: context.textMuted)),
+      ]),
+    ));
+  }
+}
+
+// Qabul qilingan buyurtma kartasi (Yukchi uchun)
+class _ActiveOrderCard extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final VoidCallback onChat;
+  const _ActiveOrderCard({required this.data, required this.onChat});
+
+  @override
+  Widget build(BuildContext context) {
+    final from = data['from_city'] ?? '';
+    final to = data['to_city'] ?? '';
+    final type = data['cargo_type'] ?? '';
+    final furachi = data['furachi'];
+    final furachiName = furachi != null
+        ? '${furachi['first_name'] ?? ''} ${furachi['last_name'] ?? ''}'.trim()
+        : 'Furachi';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.primary.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.primary.withOpacity(0.25)),
+      ),
+      child: Row(children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
+          child: const Icon(Icons.local_shipping_outlined, color: AppTheme.primary, size: 22),
+        ),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(type, style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14, color: context.textPrimary)),
+          Text('$from → $to', style: GoogleFonts.inter(fontSize: 12, color: context.textMuted)),
+          if (furachiName.isNotEmpty)
+            Text('Furachi: $furachiName', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.primary, fontWeight: FontWeight.w600)),
+        ])),
+        ElevatedButton.icon(
+          onPressed: onChat,
+          icon: const Icon(Icons.chat_bubble_outline, size: 16),
+          label: Text('Chat', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.primary,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+      ]),
+    );
   }
 }
 
@@ -191,11 +285,13 @@ class _DriverCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = '${data['first_name'] ?? ''} ${data['last_name'] ?? ''}'.trim();
-    final truck = data['truck_type'] ?? 'Noma\'lum';
+    final truck = data['truck_type'] ?? '';
     final capacity = data['capacity'] ?? '';
     final fromCity = data['from_city'] ?? '';
-    final routes = data['to_routes'] ?? '';
+    final routes = (data['to_routes'] ?? '') as String;
     final phone = data['phone'] ?? '';
+    final cleanRoutes = routes.replaceAll('[', '').replaceAll(']', '').replaceAll('"', '');
+    final firstRoute = cleanRoutes.split(',').first.trim();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -207,69 +303,113 @@ class _DriverCard extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(children: [
-          Row(children: [
-            CircleAvatar(
-              radius: 26,
-              backgroundColor: AppTheme.primary.withOpacity(0.1),
-              child: Text(name.isEmpty ? '?' : name[0].toUpperCase(),
-                  style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.primary)),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 26,
+                  backgroundColor: AppTheme.primary.withOpacity(0.1),
+                  child: Text(
+                    name.isEmpty ? '?' : name[0].toUpperCase(),
+                    style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.primary),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(name.isEmpty ? 'Furachi' : name,
+                          style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 15, color: context.textPrimary)),
+                      const SizedBox(height: 4),
+                      if (truck.isNotEmpty)
+                        Text('$truck${capacity.isNotEmpty ? "  •  $capacity" : ""}',
+                            style: GoogleFonts.inter(fontSize: 13, color: context.textMuted)),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF29CC78).withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text('Tayyor',
+                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF29CC78))),
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(name.isEmpty ? 'Furachi' : name,
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 15, color: context.textPrimary)),
-              const SizedBox(height: 4),
-              Row(children: [
-                Icon(Icons.local_shipping_outlined, size: 14, color: context.textMuted),
-                const SizedBox(width: 4),
-                Text('$truck${capacity.isNotEmpty ? "  •  $capacity" : ""}',
-                    style: GoogleFonts.inter(fontSize: 13, color: context.textMuted)),
-              ]),
-            ])),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(color: const Color(0xFF29CC78).withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
-              child: Text('Tayyor', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF29CC78))),
-            ),
-          ]),
-          if (fromCity.isNotEmpty) ...[
+            if (fromCity.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: context.inputColor, borderRadius: BorderRadius.circular(12)),
+                child: Row(
+                  children: [
+                    const Icon(Icons.circle, size: 8, color: AppTheme.primary),
+                    const SizedBox(width: 6),
+                    Text(fromCity,
+                        style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: context.textPrimary)),
+                    if (cleanRoutes.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Icon(Icons.arrow_forward, size: 14, color: context.textMuted),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(cleanRoutes,
+                            style: GoogleFonts.inter(fontSize: 13, color: context.textMuted),
+                            overflow: TextOverflow.ellipsis),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: context.inputColor, borderRadius: BorderRadius.circular(12)),
-              child: Row(children: [
-                const Icon(Icons.circle, size: 8, color: AppTheme.primary),
-                const SizedBox(width: 6),
-                Text(fromCity, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: context.textPrimary)),
-                if (routes.isNotEmpty) ...[
-                  const SizedBox(width: 6),
-                  Icon(Icons.arrow_forward, size: 14, color: context.textMuted),
-                  const SizedBox(width: 6),
-                  Expanded(child: Text(routes.replaceAll('[', '').replaceAll(']', '').replaceAll('"', ''),
-                      style: GoogleFonts.inter(fontSize: 13, color: context.textMuted), overflow: TextOverflow.ellipsis)),
-                ],
-              ]),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: (fromCity.isNotEmpty && firstRoute.isNotEmpty)
+                        ? () => Navigator.push(context, MaterialPageRoute(
+                              builder: (_) => RouteMapScreen(
+                                fromCity: fromCity,
+                                toCity: firstRoute,
+                                driverName: name,
+                              ),
+                            ))
+                        : null,
+                    icon: const Icon(Icons.map_outlined, size: 16),
+                    label: Text("Yo'nalish",
+                        style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.primary,
+                      side: BorderSide(color: AppTheme.primary.withOpacity(0.4)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.phone_outlined, size: 16),
+                    label: Text(phone.isNotEmpty ? "Qo'ng'iroq" : "Bog'lanish",
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.phone_outlined, size: 16),
-              label: Text(phone.isNotEmpty ? phone : "Bog'lanish",
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ),
-        ]),
+        ),
       ),
     );
   }

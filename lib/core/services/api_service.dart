@@ -3,10 +3,11 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:yukgo_flutter/core/services/token_storage.dart';
 
 class ApiService {
-  static const String _baseUrl = 'https://api.smart-tools.uk/api/v1';
+  static const String baseUrl = 'https://api.smart-tools.uk/api/v1';
+  static String get wsBase => baseUrl.replaceAll('https://', 'wss://').replaceAll('http://', 'ws://') + '/chat/ws';
 
   static final Dio _dio = Dio(BaseOptions(
-    baseUrl: _baseUrl,
+    baseUrl: baseUrl,
     connectTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 10),
     headers: {'Content-Type': 'application/json'},
@@ -72,5 +73,20 @@ class ApiService {
     final resp = await _dio.patch('/orders/$orderId/accept',
         options: await _authOptions());
     return resp.data as Map<String, dynamic>;
+  }
+
+  // ─── Chat ────────────────────────────────────────────────────────────────
+
+  static Future<void> saveFcmToken(String fcmToken) async {
+    try {
+      await _dio.patch('/chat/fcm-token',
+          data: {'fcm_token': fcmToken}, options: await _authOptions());
+    } catch (_) {}
+  }
+
+  static Future<List<dynamic>> getChatHistory(String roomId) async {
+    final resp = await _dio.get('/chat/$roomId/messages',
+        options: await _authOptions());
+    return resp.data as List<dynamic>;
   }
 }

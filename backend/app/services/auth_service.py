@@ -186,14 +186,26 @@ class AuthService:
         return PhoneLoginResponse(code=code)
 
     @staticmethod
-    async def verify_code(code: str) -> VerifyCodeResponse:
+    async def verify_code(code: str, db: AsyncSession) -> VerifyCodeResponse:
         """Flutter → kodni tekshir, JWT ber"""
         redis = await get_redis()
         token = await redis.get(f"otp:{code}")
         if not token:
             raise TokenNotFoundError()
         await redis.delete(f"otp:{code}")
-        return VerifyCodeResponse(success=True, auth_token=token, is_profile_complete=False)
+
+        # Haqiqiy is_profile_complete ni bazadan olish
+        payload = decode_access_token(token)
+        user_id = payload.get("user_id")
+        is_complete = False
+        if user_id:
+            stmt = select(User).where(User.id == user_id)
+            result = await db.execute(stmt)
+            user = result.scalar_one_or_none()
+            if user:
+                is_complete = bool(user.is_profile_complete)
+
+        return VerifyCodeResponse(success=True, auth_token=token, is_profile_complete=is_complete)
 
     @staticmethod
     async def get_current_user(token: str, db: AsyncSession) -> User:

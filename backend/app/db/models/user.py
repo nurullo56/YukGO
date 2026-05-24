@@ -31,6 +31,8 @@ class User(Base):
     # Yukchi profili
     cargo_type = Column(String(100), nullable=True)
 
+    fcm_token = Column(String(512), nullable=True)  # Push notification token
+
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
 

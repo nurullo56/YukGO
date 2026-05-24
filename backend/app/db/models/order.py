@@ -1,7 +1,7 @@
 """
 Order (Yuk buyurtmasi) modeli
 """
-from sqlalchemy import Column, BigInteger, String, Boolean, DateTime, Text, Numeric, ForeignKey
+from sqlalchemy import Column, BigInteger, Integer, String, Boolean, DateTime, Text, Numeric, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.db.base import Base
@@ -10,7 +10,7 @@ from app.db.base import Base
 class Order(Base):
     __tablename__ = "orders"
 
-    id = Column(BigInteger, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
 
     # Yukchi (buyurtmachi)
     yukchi_id = Column(BigInteger, ForeignKey("users.id"), nullable=False, index=True)

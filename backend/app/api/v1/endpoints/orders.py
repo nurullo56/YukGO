@@ -4,6 +4,7 @@ Orders CRUD
 from fastapi import APIRouter, Depends, HTTPException, Header, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from app.db.session import get_db
 from app.db.models.order import Order
 from app.db.models.user import User
@@ -60,7 +61,10 @@ async def list_orders(
 ):
     """Barcha ochiq buyurtmalar (furachi uchun)"""
     await get_user(authorization, db)
-    stmt = select(Order).where(Order.status == "pending").order_by(Order.created_at.desc())
+    stmt = (select(Order)
+            .options(selectinload(Order.yukchi))
+            .where(Order.status == "pending")
+            .order_by(Order.created_at.desc()))
     result = await db.execute(stmt)
     return result.scalars().all()
 
@@ -73,9 +77,15 @@ async def my_orders(
     """O'z buyurtmalarim"""
     user = await get_user(authorization, db)
     if user.role == "yukchi":
-        stmt = select(Order).where(Order.yukchi_id == user.id).order_by(Order.created_at.desc())
+        stmt = (select(Order)
+                .options(selectinload(Order.furachi))
+                .where(Order.yukchi_id == user.id)
+                .order_by(Order.created_at.desc()))
     else:
-        stmt = select(Order).where(Order.furachi_id == user.id).order_by(Order.created_at.desc())
+        stmt = (select(Order)
+                .options(selectinload(Order.yukchi))
+                .where(Order.furachi_id == user.id)
+                .order_by(Order.created_at.desc()))
     result = await db.execute(stmt)
     return result.scalars().all()
 
@@ -101,7 +111,12 @@ async def accept_order(
     order.status = "accepted"
     await db.commit()
     await db.refresh(order)
-    return order
+    await db.execute(
+        select(Order).options(selectinload(Order.yukchi)).where(Order.id == order.id)
+    )
+    stmt2 = (select(Order).options(selectinload(Order.yukchi)).where(Order.id == order.id))
+    result2 = await db.execute(stmt2)
+    return result2.scalar_one()
 
 
 @router.patch("/{order_id}/status", response_model=OrderResponse)

@@ -11,8 +11,12 @@ class UserSession {
   // Global til — 'uz' | 'ru' | 'en'
   static final ValueNotifier<String> language = ValueNotifier('uz');
 
+  // Bildirishnomalar
+  static final ValueNotifier<bool> notifications = ValueNotifier(true);
+
   // Auth holati
   static bool isLoggedIn = false;
+  static int userId = 0;
 
   // Foydalanuvchi ma'lumotlari
   static String email = '';

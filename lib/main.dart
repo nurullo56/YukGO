@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:app_links/app_links.dart';
 import 'package:yukgo_flutter/core/theme/app_theme.dart';
 import 'package:yukgo_flutter/core/utils/user_session.dart';
@@ -14,17 +15,20 @@ import 'package:yukgo_flutter/features/auth/screens/role_selection_screen.dart';
 import 'package:yukgo_flutter/features/yukchi/screens/yukchi_home_screen.dart';
 import 'package:yukgo_flutter/features/profile/profile_screen.dart';
 import 'package:yukgo_flutter/features/driver/screens/order_detail_screen.dart';
+import 'package:yukgo_flutter/features/driver/models/order_model.dart';
 import 'package:yukgo_flutter/features/shipper/screens/driver_list_screen.dart';
 import 'package:yukgo_flutter/features/shipper/screens/driver_profile_screen.dart';
 import 'package:yukgo_flutter/features/shipper/screens/order_tracking_screen.dart';
 import 'package:yukgo_flutter/features/shipper/screens/shipper_chat_screen.dart';
 import 'package:yukgo_flutter/features/furachi/screens/furachi_home_screen.dart';
+import 'package:yukgo_flutter/features/chat/screens/chat_screen.dart';
+import 'package:yukgo_flutter/core/services/fcm_service.dart';
 
 final _navigatorKey = GlobalKey<NavigatorState>();
 
 const _protectedRoutes = {
   '/ai-chat', '/furachi-home', '/driver-list', '/driver-profile',
-  '/order-tracking', '/order-detail', '/shipper-chat', '/profile',
+  '/order-tracking', '/order-detail', '/shipper-chat', '/profile', '/chat',
 };
 
 Route<dynamic> _generateRoute(RouteSettings s) {
@@ -45,9 +49,19 @@ Route<dynamic> _generateRoute(RouteSettings s) {
     '/driver-list':     (_) => const DriverListScreen(),
     '/driver-profile':  (_) => const DriverProfileScreen(),
     '/order-tracking':  (_) => const OrderTrackingScreen(),
-    '/order-detail':    (_) => const OrderDetailScreen(),
+    '/order-detail':    (_) {
+      final order = s.arguments as OrderModel? ?? const OrderModel();
+      return OrderDetailScreen(order: order);
+    },
     '/shipper-chat':    (_) => const ShipperChatScreen(),
     '/profile':         (_) => const ProfileScreen(),
+    '/chat':            (_) {
+      final args = s.arguments as Map<String, String>? ?? {};
+      return ChatScreen(
+        roomId: args['roomId'] ?? '',
+        otherName: args['otherName'] ?? 'Chat',
+      );
+    },
   };
 
   final builder = builders[s.name];
@@ -55,8 +69,10 @@ Route<dynamic> _generateRoute(RouteSettings s) {
   return MaterialPageRoute(builder: (_) => const SplashScreen());
 }
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  await FcmService.init();
   runApp(const YukGoApp());
 }
 
@@ -93,6 +109,7 @@ class _YukGoAppState extends State<YukGoApp> {
       try {
         final userData = await ApiService.getMe();
         UserSession.isLoggedIn = true;
+        UserSession.userId = userData['id'] ?? 0;
         UserSession.role = userData['role'] ?? 'yukchi';
         UserSession.firstName = userData['first_name'] ?? '';
         UserSession.lastName = userData['last_name'] ?? '';

@@ -7,6 +7,8 @@ import 'package:yukgo_flutter/core/services/api_service.dart';
 import 'package:yukgo_flutter/features/auth/widgets/step_indicator.dart';
 import 'package:yukgo_flutter/features/auth/widgets/select_chip.dart';
 import 'package:yukgo_flutter/features/yukchi/screens/yukchi_home_screen.dart';
+import 'package:yukgo_flutter/core/services/location_service.dart';
+import 'package:yukgo_flutter/core/services/notification_service.dart';
 
 class YukchiSetupScreen extends StatefulWidget {
   const YukchiSetupScreen({super.key});
@@ -21,6 +23,24 @@ class _YukchiSetupScreenState extends State<YukchiSetupScreen> {
   final Set<String> _toRoutes = {};
   String _frequency = '';
   bool _loading = false;
+  bool _detectingCity = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _autoDetectCity();
+  }
+
+  Future<void> _autoDetectCity() async {
+    final city = await LocationService.detectNearestCity();
+    // Bildirishnoma ruxsatini ham so'rash
+    await NotificationService.requestPermission();
+    if (!mounted) return;
+    setState(() {
+      if (city != null) _fromCity = city;
+      _detectingCity = false;
+    });
+  }
 
   static const _cargoTypes = [
     'Mebel', 'Oziq-ovqat', 'Qurilish materiallari',
@@ -101,13 +121,13 @@ class _YukchiSetupScreenState extends State<YukchiSetupScreen> {
                     const SizedBox(height: 32),
 
                     Row(children: [
-                      const Text("рџ“¦", style: TextStyle(fontSize: 32)),
+                      const Text(“📦”, style: TextStyle(fontSize: 32)),
                       const SizedBox(width: 12),
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text("Yuk ma'lumotlari", style: GoogleFonts.inter(
+                        Text(“Yuk ma'lumotlari”, style: GoogleFonts.inter(
                           fontSize: 22, fontWeight: FontWeight.w800, color: context.textPrimary,
                         )),
-                        Text("Bir marta to'ldiring вЂ” keyingi buyurtmalarda tez bo'ladi",
+                        Text(“Bir marta to'ldiring — keyingi buyurtmalarda tez bo'ladi”,
                           style: GoogleFonts.inter(fontSize: 12, color: context.textMuted, height: 1.4)),
                       ])),
                     ]),
@@ -123,7 +143,22 @@ class _YukchiSetupScreenState extends State<YukchiSetupScreen> {
                     const SizedBox(height: 24),
 
                     // From city
-                    _sectionTitle("Asosiy yuklash shahri"),
+                    Row(children: [
+                      Expanded(child: _sectionTitle("Asosiy yuklash shahri")),
+                      if (_detectingCity)
+                        Row(children: [
+                          SizedBox(width: 12, height: 12,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary)),
+                          const SizedBox(width: 6),
+                          Text("Joylashuv...", style: GoogleFonts.inter(fontSize: 11, color: AppTheme.primary)),
+                        ])
+                      else if (_fromCity.isNotEmpty)
+                        Row(children: [
+                          const Icon(Icons.my_location, size: 14, color: AppTheme.primary),
+                          const SizedBox(width: 4),
+                          Text("Avtomatik", style: GoogleFonts.inter(fontSize: 11, color: AppTheme.primary)),
+                        ]),
+                    ]),
                     const SizedBox(height: 10),
                     Wrap(spacing: 8, runSpacing: 8, children: _cities.map((c) =>
                       SelectChip(label: c, isSelected: _fromCity == c,

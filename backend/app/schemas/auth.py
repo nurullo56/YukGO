@@ -115,6 +115,7 @@ class OrderResponse(BaseModel):
     status: str
     created_at: datetime
     yukchi: Optional[UserResponse] = None
+    furachi: Optional[UserResponse] = None
 
     class Config:
         from_attributes = True

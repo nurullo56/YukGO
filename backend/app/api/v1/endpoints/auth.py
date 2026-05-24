@@ -73,10 +73,10 @@ async def phone_login(
 
 
 @router.post("/verify-code", response_model=VerifyCodeResponse)
-async def verify_code(request: VerifyCodeRequest):
+async def verify_code(request: VerifyCodeRequest, db: AsyncSession = Depends(get_db)):
     """Flutter'dan: Kod → JWT token ber"""
     try:
-        return await AuthService.verify_code(request.code)
+        return await AuthService.verify_code(request.code, db)
     except AuthError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

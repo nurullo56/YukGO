@@ -7,6 +7,8 @@ import 'package:yukgo_flutter/core/services/api_service.dart';
 import 'package:yukgo_flutter/features/auth/widgets/step_indicator.dart';
 import 'package:yukgo_flutter/features/auth/widgets/select_chip.dart';
 import 'package:yukgo_flutter/features/furachi/screens/furachi_home_screen.dart';
+import 'package:yukgo_flutter/core/services/location_service.dart';
+import 'package:yukgo_flutter/core/services/notification_service.dart';
 
 class FurachiSetupScreen extends StatefulWidget {
   const FurachiSetupScreen({super.key});
@@ -21,6 +23,24 @@ class _FurachiSetupScreenState extends State<FurachiSetupScreen> {
   String _fromCity = '';
   final Set<String> _toRoutes = {};
   bool _loading = false;
+  bool _detectingCity = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _autoDetectCity();
+  }
+
+  Future<void> _autoDetectCity() async {
+    final city = await LocationService.detectNearestCity();
+    // Bildirishnoma ruxsatini ham so'rash
+    await NotificationService.requestPermission();
+    if (!mounted) return;
+    setState(() {
+      if (city != null) _fromCity = city;
+      _detectingCity = false;
+    });
+  }
 
   static const _trucks = ['GAZelle', 'Labo', 'Kamaz', 'Zil 130', 'MAN', 'Boshqa'];
   static const _capacities = ['0.5 tonna', '1 tonna', '1.5 tonna', '3 tonna', '5 tonna', '10+ tonna'];
@@ -128,7 +148,22 @@ class _FurachiSetupScreenState extends State<FurachiSetupScreen> {
                     const SizedBox(height: 24),
 
                     // From city
-                    _sectionTitle("Qayerdan (asosiy shahar)"),
+                    Row(children: [
+                      Expanded(child: _sectionTitle("Qayerdan (asosiy shahar)")),
+                      if (_detectingCity)
+                        Row(children: [
+                          SizedBox(width: 12, height: 12,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary)),
+                          const SizedBox(width: 6),
+                          Text("Joylashuv...", style: GoogleFonts.inter(fontSize: 11, color: AppTheme.primary)),
+                        ])
+                      else if (_fromCity.isNotEmpty)
+                        Row(children: [
+                          const Icon(Icons.my_location, size: 14, color: AppTheme.primary),
+                          const SizedBox(width: 4),
+                          Text("Avtomatik", style: GoogleFonts.inter(fontSize: 11, color: AppTheme.primary)),
+                        ]),
+                    ]),
                     const SizedBox(height: 10),
                     Wrap(spacing: 8, runSpacing: 8, children: _cities.map((c) =>
                       SelectChip(label: c, isSelected: _fromCity == c,

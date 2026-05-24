@@ -71,6 +71,23 @@ async def handle_contact(message: Message):
             "❌ Server bilan aloqa yo'q. Keyinroq qaytadan urinib ko'ring.",
             reply_markup=remove_keyboard()
         )
+    except (ValueError, KeyError) as e:
+        await processing.delete()
+        logger.error(f"Response parse error: {e}")
+        await message.answer(
+            "❌ Serverdan noto'g'ri javob keldi. Keyinroq urinib ko'ring.",
+            reply_markup=remove_keyboard()
+        )
+    except Exception as e:
+        try:
+            await processing.delete()
+        except Exception:
+            pass
+        logger.error(f"Unexpected error in handle_contact: {e}", exc_info=True)
+        await message.answer(
+            "❌ Kutilmagan xato yuz berdi. Iltimos, keyinroq qaytadan urinib ko'ring.",
+            reply_markup=remove_keyboard()
+        )
 
 
 @router.message(F.text)

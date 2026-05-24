@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.config import settings
 from app.core.redis import close_redis
-from app.api.v1.endpoints import auth, orders
+from app.api.v1.endpoints import auth, orders, chat
 
 
 @asynccontextmanager
@@ -14,6 +14,7 @@ async def lifespan(app: FastAPI):
     """App startup/shutdown"""
     from app.db.base import Base
     from app.db.session import engine
+    import app.db.models  # noqa: barcha modellarni ro'yxatdan o'tkazish
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     print("Starting up...")
@@ -40,6 +41,7 @@ app.add_middleware(
 # Routers
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(orders.router, prefix="/api/v1")
+app.include_router(chat.router, prefix="/api/v1")
 
 
 @app.get("/")
