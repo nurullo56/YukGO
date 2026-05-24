@@ -135,7 +135,7 @@ class _TelegramOtpScreenState extends State<TelegramOtpScreen> {
               ),
               const SizedBox(height: 20),
 
-              Text("Telegram kodi 🔑", style: GoogleFonts.inter(
+              Text("Telegram kodi \u{1F511}", style: GoogleFonts.inter(
                 fontSize: 26, fontWeight: FontWeight.w800, color: context.textPrimary,
               )),
               const SizedBox(height: 8),
@@ -161,7 +161,7 @@ class _TelegramOtpScreenState extends State<TelegramOtpScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        "Bot da «📱 Telefon raqamni yuborish» tugmasini bosing → kod keladi",
+                        "Bot da \u{00AB}\u{1F4F1} Telefon raqamni yuborish\u{00BB} tugmasini bosing \u{2192} kod keladi",
                         style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF229ED9)),
                       ),
                     ),
