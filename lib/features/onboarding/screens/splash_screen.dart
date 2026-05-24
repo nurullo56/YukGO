@@ -5,6 +5,7 @@ import 'package:yukgo_flutter/core/services/token_storage.dart';
 import 'package:yukgo_flutter/core/services/api_service.dart';
 import 'package:yukgo_flutter/core/utils/user_session.dart';
 import 'package:yukgo_flutter/core/services/notification_service.dart';
+import 'package:yukgo_flutter/core/services/fcm_service.dart';
 import 'package:yukgo_flutter/features/onboarding/screens/onboarding_screen.dart';
 import 'package:yukgo_flutter/features/yukchi/screens/yukchi_home_screen.dart';
 import 'package:yukgo_flutter/features/furachi/screens/furachi_home_screen.dart';
@@ -24,9 +25,11 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Bildirishnoma sozlamasini yuklash
     final notifEnabled = await NotificationService.isEnabled();
     UserSession.notifications.value = notifEnabled;
+
+    // FCM ni fon da ishga tushirish (UI ni bloklamaslik uchun)
+    FcmService.init().catchError((_) {});
 
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;

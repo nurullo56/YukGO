@@ -72,7 +72,6 @@ Route<dynamic> _generateRoute(RouteSettings s) {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await FcmService.init();
   runApp(const YukGoApp());
 }
 
