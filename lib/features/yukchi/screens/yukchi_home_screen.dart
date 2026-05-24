@@ -6,6 +6,7 @@ import 'package:yukgo_flutter/core/utils/user_session.dart';
 import 'package:yukgo_flutter/core/services/api_service.dart';
 import 'package:yukgo_flutter/core/widgets/app_bottom_nav.dart';
 import 'package:yukgo_flutter/core/widgets/auth_guard.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:yukgo_flutter/features/map/screens/route_map_screen.dart';
 
 class YukchiHomeScreen extends StatefulWidget {
@@ -393,9 +394,11 @@ class _DriverCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: phone.isNotEmpty
+                        ? () => launchUrl(Uri.parse('tel:$phone'))
+                        : null,
                     icon: const Icon(Icons.phone_outlined, size: 16),
-                    label: Text(phone.isNotEmpty ? "Qo'ng'iroq" : "Bog'lanish",
+                    label: Text("Qo'ng'iroq",
                         style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primary,

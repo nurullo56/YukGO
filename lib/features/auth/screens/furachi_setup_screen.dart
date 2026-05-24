@@ -77,14 +77,24 @@ class _FurachiSetupScreenState extends State<FurachiSetupScreen> {
         'from_city': _fromCity,
         'to_routes': _toRoutes.toList(),
       });
-    } catch (_) {}
-    UserSession.isLoggedIn = true;
-    if (!mounted) return;
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const FurachiHomeScreen()),
-      (_) => false,
-    );
+      UserSession.isLoggedIn = true;
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const FurachiHomeScreen()),
+        (_) => false,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Saqlashda xato. Qaytadan urinib ko'ring.",
+            style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        backgroundColor: Colors.red.shade400,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ));
+    }
   }
 
   @override

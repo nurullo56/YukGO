@@ -110,11 +110,9 @@ async def accept_order(
     order.furachi_id = user.id
     order.status = "accepted"
     await db.commit()
-    await db.refresh(order)
-    await db.execute(
-        select(Order).options(selectinload(Order.yukchi)).where(Order.id == order.id)
-    )
-    stmt2 = (select(Order).options(selectinload(Order.yukchi)).where(Order.id == order.id))
+    stmt2 = (select(Order)
+             .options(selectinload(Order.yukchi), selectinload(Order.furachi))
+             .where(Order.id == order.id))
     result2 = await db.execute(stmt2)
     return result2.scalar_one()
 
