@@ -4,6 +4,7 @@ Bot runner
 import asyncio
 import logging
 from aiogram import Bot, Dispatcher
+from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from bot.config import settings
 from bot.handlers import start, contact
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 async def main():
     """Bot ishga tushirish"""
 
-    bot = Bot(token=settings.BOT_TOKEN, parse_mode=ParseMode.HTML)
+    bot = Bot(token=settings.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     
     dp = Dispatcher()
     
