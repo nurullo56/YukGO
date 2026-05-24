@@ -73,6 +73,7 @@ class _TelegramOtpScreenState extends State<TelegramOtpScreen> {
       UserSession.role = userData['role'] ?? 'yukchi';
       UserSession.firstName = userData['first_name'] ?? '';
       UserSession.lastName = userData['last_name'] ?? '';
+      UserSession.phone = userData['phone'] ?? '';
       final isComplete = userData['is_profile_complete'] ?? false;
 
       if (!mounted) return;
@@ -134,7 +135,7 @@ class _TelegramOtpScreenState extends State<TelegramOtpScreen> {
               ),
               const SizedBox(height: 20),
 
-              Text(“Telegram kodi 🔑”, style: GoogleFonts.inter(
+              Text("Telegram kodi 🔑", style: GoogleFonts.inter(
                 fontSize: 26, fontWeight: FontWeight.w800, color: context.textPrimary,
               )),
               const SizedBox(height: 8),
@@ -160,7 +161,7 @@ class _TelegramOtpScreenState extends State<TelegramOtpScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        “Bot da «📱 Telefon raqamni yuborish» tugmasini bosing → kod keladi”,
+                        "Bot da «📱 Telefon raqamni yuborish» tugmasini bosing → kod keladi",
                         style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF229ED9)),
                       ),
                     ),

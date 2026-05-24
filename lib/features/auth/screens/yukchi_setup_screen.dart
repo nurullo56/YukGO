@@ -121,13 +121,13 @@ class _YukchiSetupScreenState extends State<YukchiSetupScreen> {
                     const SizedBox(height: 32),
 
                     Row(children: [
-                      const Text(“📦”, style: TextStyle(fontSize: 32)),
+                      const Text("📦", style: TextStyle(fontSize: 32)),
                       const SizedBox(width: 12),
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(“Yuk ma'lumotlari”, style: GoogleFonts.inter(
+                        Text("Yuk ma'lumotlari", style: GoogleFonts.inter(
                           fontSize: 22, fontWeight: FontWeight.w800, color: context.textPrimary,
                         )),
-                        Text(“Bir marta to'ldiring — keyingi buyurtmalarda tez bo'ladi”,
+                        Text("Bir marta to'ldiring — keyingi buyurtmalarda tez bo'ladi",
                           style: GoogleFonts.inter(fontSize: 12, color: context.textMuted, height: 1.4)),
                       ])),
                     ]),
@@ -207,7 +207,7 @@ class _YukchiSetupScreenState extends State<YukchiSetupScreen> {
                   ),
                   child: _loading
                       ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                      : Text("Ro'yxatdan o'tish вњ“", style: GoogleFonts.inter(
+                      : Text("Ro'yxatdan o'tish ✍️", style: GoogleFonts.inter(
                     fontSize: 16, fontWeight: FontWeight.w700)),
                 ),
               ),

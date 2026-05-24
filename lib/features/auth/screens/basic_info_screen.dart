@@ -19,7 +19,6 @@ class BasicInfoScreen extends StatefulWidget {
 class _BasicInfoScreenState extends State<BasicInfoScreen> {
   late final TextEditingController _firstNameCtrl;
   late final TextEditingController _lastNameCtrl;
-  late final TextEditingController _phoneCtrl;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -27,15 +26,12 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     super.initState();
     _firstNameCtrl = TextEditingController(text: UserSession.firstName);
     _lastNameCtrl = TextEditingController(text: UserSession.lastName);
-    final phone = UserSession.phone.replaceAll('+998', '').replaceAll(' ', '');
-    _phoneCtrl = TextEditingController(text: phone);
   }
 
   @override
   void dispose() {
     _firstNameCtrl.dispose();
     _lastNameCtrl.dispose();
-    _phoneCtrl.dispose();
     super.dispose();
   }
 
@@ -43,7 +39,6 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     if (!_formKey.currentState!.validate()) return;
     UserSession.firstName = _firstNameCtrl.text.trim();
     UserSession.lastName = _lastNameCtrl.text.trim();
-    UserSession.phone = '+998${_phoneCtrl.text.replaceAll(' ', '')}';
     Navigator.push(context, MaterialPageRoute(
       builder: (_) => widget.role == 'yukchi'
           ? const YukchiSetupScreen()
@@ -105,46 +100,30 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                         ctrl: _lastNameCtrl,
                         hint: 'Karimov',
                         icon: Icons.badge_outlined,
-                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Familyani kiriting' : null,
+                        validator: (_) => null,
                       ),
                       const SizedBox(height: 16),
 
                       _label("Telefon raqam"),
                       const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _phoneCtrl,
-                        keyboardType: TextInputType.phone,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(9),
-                        ],
-                        style: GoogleFonts.inter(fontSize: 15, color: context.textPrimary),
-                        decoration: InputDecoration(
-                          hintText: '90 123 45 67',
-                          hintStyle: GoogleFonts.inter(color: context.textMuted),
-                          prefixIcon: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                            child: Text('+998', style: GoogleFonts.inter(
-                              fontSize: 15, fontWeight: FontWeight.w600, color: context.textPrimary,
-                            )),
-                          ),
-                          filled: true,
-                          fillColor: context.inputColor,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: AppTheme.primary, width: 2),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: context.inputColor,
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) return 'Telefon raqamini kiriting';
-                          if (v.length < 9) return "To'liq raqam kiriting";
-                          return null;
-                        },
+                        child: Row(
+                          children: [
+                            Icon(Icons.phone_outlined, color: context.textMuted, size: 20),
+                            const SizedBox(width: 12),
+                            Text(
+                              UserSession.phone.isNotEmpty ? UserSession.phone : '+998 -- --- -- --',
+                              style: GoogleFonts.inter(fontSize: 15, color: context.textPrimary),
+                            ),
+                            const Spacer(),
+                            Icon(Icons.lock_outline, color: context.textMuted, size: 16),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 32),
                     ],
