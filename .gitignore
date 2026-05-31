@@ -30,11 +30,14 @@ app.*.map.json
 /android/app/release
 
 # ─── Secrets & Environment ───────────────────────────────────────────────────
+deploy.py
 .env
 .env.local
+.env.deploy
 .env.production
 **/.env
 **/.env.local
+**/.env.deploy
 **/.env.production
 !**/.env.example
 
