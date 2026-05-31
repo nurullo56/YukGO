@@ -43,21 +43,22 @@ class TelegramAuthService {
     final botLink = await initAuth();
     if (botLink == null) return false;
 
-    // Telegram app URI
     final token = _currentToken!;
     final tgUri = Uri.parse('tg://resolve?domain=Logistics_login_bot&start=$token');
     final webUri = Uri.parse(botLink);
 
+    // Avval tg:// bilan to'g'ridan-to'g'ri ochishga harakat qilamiz
     try {
-      if (await canLaunchUrl(tgUri)) {
-        await launchUrl(tgUri, mode: LaunchMode.externalApplication);
-        return true;
-      }
-      if (await canLaunchUrl(webUri)) {
-        await launchUrl(webUri, mode: LaunchMode.externalApplication);
-        return true;
-      }
+      await launchUrl(tgUri, mode: LaunchMode.externalApplication);
+      return true;
     } catch (_) {}
+
+    // tg:// ishlamasa — https://t.me/ havolasini browser/Telegram orqali ochamiz
+    try {
+      await launchUrl(webUri, mode: LaunchMode.externalApplication);
+      return true;
+    } catch (_) {}
+
     return false;
   }
 

@@ -6,6 +6,7 @@ import 'package:yukgo_flutter/core/utils/user_session.dart';
 import 'package:yukgo_flutter/core/services/api_service.dart';
 import 'package:yukgo_flutter/core/widgets/app_bottom_nav.dart';
 import 'package:yukgo_flutter/core/widgets/auth_guard.dart';
+import 'package:yukgo_flutter/core/services/fcm_service.dart';
 import 'package:yukgo_flutter/features/map/screens/route_map_screen.dart';
 
 class FurachiHomeScreen extends StatefulWidget {
@@ -29,6 +30,7 @@ class _FurachiHomeScreenState extends State<FurachiHomeScreen> {
   void initState() {
     super.initState();
     _loadOrders();
+    FcmService.init().catchError((_) {});
   }
 
   Future<void> _loadOrders() async {
@@ -170,7 +172,7 @@ class _FurachiHomeScreenState extends State<FurachiHomeScreen> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Salom, ${UserSession.firstName.isEmpty ? "Furachi" : UserSession.firstName}! 👋',
+            Text('Salom, ${UserSession.firstName.isEmpty ? "Furachi" : UserSession.firstName}!',
                 style: GoogleFonts.inter(fontSize: 13, color: context.textMuted)),
             Text('Mavjud yuklar', style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800, color: context.textPrimary)),
           ]),

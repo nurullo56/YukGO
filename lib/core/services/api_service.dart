@@ -75,6 +75,25 @@ class ApiService {
     return resp.data as Map<String, dynamic>;
   }
 
+  // ─── Payments ────────────────────────────────────────────────────────────
+
+  static Future<Map<String, dynamic>> processPayment({
+    required String methodId,
+    required double amount,
+    Map<String, dynamic>? additionalData,
+  }) async {
+    final resp = await _dio.post(
+      '/payments/process',
+      data: {
+        'method': methodId,
+        'amount': amount,
+        if (additionalData != null) ...additionalData,
+      },
+      options: await _authOptions(),
+    );
+    return resp.data as Map<String, dynamic>;
+  }
+
   // ─── Chat ────────────────────────────────────────────────────────────────
 
   static Future<void> saveFcmToken(String fcmToken) async {

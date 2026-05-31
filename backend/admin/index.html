@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YukGo Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F1F5F9;color:#1E293B;display:flex;min-height:100vh}
+
+/* Login */
+#login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1E3A5F,#2563EB);display:flex;align-items:center;justify-content:center;z-index:999}
+.login-box{background:#fff;border-radius:24px;padding:48px 40px;width:100%;max-width:400px;box-shadow:0 25px 60px rgba(0,0,0,.2)}
+.login-logo{width:56px;height:56px;background:#2563EB;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:26px;color:#fff;font-weight:900}
+.login-box h2{text-align:center;font-size:22px;font-weight:700;margin-bottom:6px}
+.login-box p{text-align:center;color:#64748B;font-size:14px;margin-bottom:28px}
+.login-box input{width:100%;padding:14px 16px;border:2px solid #E2E8F0;border-radius:12px;font-size:15px;outline:none;transition:.2s}
+.login-box input:focus{border-color:#2563EB}
+.login-btn{width:100%;padding:14px;background:#2563EB;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;margin-top:16px;transition:.2s}
+.login-btn:hover{background:#1D4ED8}
+.login-err{color:#EF4444;font-size:13px;text-align:center;margin-top:10px;display:none}
+
+/* Sidebar */
+#sidebar{width:240px;background:#fff;border-right:1px solid #E2E8F0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10}
+.logo{padding:24px 20px;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;gap:12px}
+.logo-icon{width:40px;height:40px;background:#2563EB;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:18px}
+.logo-text{font-size:18px;font-weight:800;color:#1E293B}
+.logo-sub{font-size:11px;color:#64748B}
+nav{flex:1;padding:16px 12px;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;cursor:pointer;font-size:14px;font-weight:600;color:#64748B;margin-bottom:4px;transition:.15s}
+.nav-item:hover{background:#F1F5F9;color:#1E293B}
+.nav-item.active{background:#EFF6FF;color:#2563EB}
+.nav-item svg{width:18px;height:18px;flex-shrink:0}
+.sidebar-footer{padding:16px;border-top:1px solid #E2E8F0;font-size:12px;color:#94A3B8;text-align:center}
+
+/* Main */
+#main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid #E2E8F0;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+.topbar h1{font-size:20px;font-weight:700}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.badge{background:#EFF6FF;color:#2563EB;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600}
+.refresh-btn{background:#F1F5F9;border:none;padding:8px 14px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:#64748B;display:flex;align-items:center;gap:6px;transition:.15s}
+.refresh-btn:hover{background:#E2E8F0}
+.content{padding:28px;flex:1}
+
+/* Pages */
+.page{display:none}.page.active{display:block}
+
+/* Stat cards */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{background:#fff;border-radius:18px;padding:22px;border:1px solid #E2E8F0;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.08}
+.stat-card.blue::before{background:#2563EB}
+.stat-card.green::before{background:#10B981}
+.stat-card.orange::before{background:#F59E0B}
+.stat-card.red::before{background:#EF4444}
+.stat-card.purple::before{background:#8B5CF6}
+.stat-label{font-size:12px;color:#64748B;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.stat-val{font-size:32px;font-weight:800;color:#1E293B}
+.stat-icon{position:absolute;top:20px;right:20px;font-size:22px;opacity:.6}
+
+/* Chart */
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
+.chart-card{background:#fff;border-radius:18px;padding:22px;border:1px solid #E2E8F0}
+.card-title{font-size:15px;font-weight:700;margin-bottom:16px;color:#1E293B}
+
+/* Tables */
+.table-card{background:#fff;border-radius:18px;border:1px solid #E2E8F0;overflow:hidden;margin-bottom:20px}
+.table-header{padding:18px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #F1F5F9}
+.table-title{font-size:15px;font-weight:700}
+.table-actions{display:flex;gap:10px;align-items:center}
+.search-input{padding:8px 14px;border:1px solid #E2E8F0;border-radius:10px;font-size:13px;outline:none;width:200px}
+.search-input:focus{border-color:#2563EB}
+select.filter-select{padding:8px 12px;border:1px solid #E2E8F0;border-radius:10px;font-size:13px;outline:none;cursor:pointer;background:#fff}
+table{width:100%;border-collapse:collapse}
+th{background:#F8FAFC;padding:12px 16px;text-align:left;font-size:12px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #E2E8F0}
+td{padding:13px 16px;border-bottom:1px solid #F1F5F9;font-size:14px;color:#1E293B}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFAFA}
+
+/* Badges */
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.s-pending{background:#FEF3C7;color:#92400E}
+.s-accepted{background:#DBEAFE;color:#1E40AF}
+.s-in_transit{background:#E0E7FF;color:#3730A3}
+.s-delivered{background:#D1FAE5;color:#065F46}
+.s-cancelled{background:#FEE2E2;color:#991B1B}
+.role-yukchi{background:#EFF6FF;color:#2563EB;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.role-furachi{background:#F0FDF4;color:#166534;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+
+/* Action buttons */
+.action-btn{padding:5px 10px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;transition:.15s}
+.btn-status{background:#F1F5F9;color:#475569}
+.btn-status:hover{background:#E2E8F0}
+.btn-del{background:#FEE2E2;color:#DC2626}
+.btn-del:hover{background:#FECACA}
+
+/* Status select in table */
+.status-select{padding:4px 8px;border:1px solid #E2E8F0;border-radius:8px;font-size:12px;outline:none;cursor:pointer}
+
+/* Loading */
+.loading{text-align:center;padding:40px;color:#94A3B8;font-size:14px}
+.spinner{display:inline-block;width:24px;height:24px;border:3px solid #E2E8F0;border-top-color:#2563EB;border-radius:50%;animation:spin .7s linear infinite;margin-bottom:10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Empty */
+.empty{text-align:center;padding:48px;color:#94A3B8}
+.empty-icon{font-size:40px;margin-bottom:12px}
+
+/* Logout */
+.logout-btn{background:none;border:1px solid #E2E8F0;padding:7px 14px;border-radius:10px;cursor:pointer;font-size:13px;color:#64748B;transition:.15s}
+.logout-btn:hover{background:#FEE2E2;color:#DC2626;border-color:#FECACA}
+
+@media(max-width:768px){
+  #sidebar{width:60px}
+  .logo-text,.logo-sub,.nav-item span{display:none}
+  #main{margin-left:60px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .chart-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">Y</div>
+    <h2>YukGo Admin</h2>
+    <p>Kirish uchun admin kalitni kiriting</p>
+    <input type="password" id="key-input" placeholder="Admin kalit..." onkeydown="if(event.key==='Enter')login()">
+    <button class="login-btn" onclick="login()">Kirish</button>
+    <div class="login-err" id="login-err">Noto'g'ri kalit!</div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="logo">
+    <div class="logo-icon">Y</div>
+    <div>
+      <div class="logo-text">YukGo</div>
+      <div class="logo-sub">Admin Panel</div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-item active" onclick="showPage('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Dashboard</span>
+    </div>
+    <div class="nav-item" onclick="showPage('users')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Foydalanuvchilar</span>
+    </div>
+    <div class="nav-item" onclick="showPage('orders')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9.5" y1="14.5" x2="14.5" y2="14.5"/></svg>
+      <span>Buyurtmalar</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">v1.0.0 &copy; YukGo</div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div class="topbar">
+    <h1 id="page-title">Dashboard</h1>
+    <div class="topbar-right">
+      <span class="badge" id="online-badge">&#x25CF; Online</span>
+      <button class="refresh-btn" onclick="refreshData()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Yangilash
+      </button>
+      <button class="logout-btn" onclick="logout()">Chiqish</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="stats-grid" id="stats-grid">
+        <div class="loading"><div class="spinner"></div><br>Yuklanmoqda...</div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="card-title">Buyurtmalar holati</div>
+          <canvas id="orders-chart" height="200"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="card-title">Foydalanuvchilar</div>
+          <canvas id="users-chart" height="200"></canvas>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <span class="table-title">So'nggi buyurtmalar</span>
+        </div>
+        <div id="recent-orders-body">
+          <div class="loading"><div class="spinner"></div><br>Yuklanmoqda...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div id="page-users" class="page">
+      <div class="table-card">
+        <div class="table-header">
+          <span class="table-title">Foydalanuvchilar</span>
+          <div class="table-actions">
+            <input class="search-input" id="user-search" placeholder="Qidirish..." oninput="filterUsers()">
+            <select class="filter-select" id="role-filter" onchange="filterUsers()">
+              <option value="">Barchasi</option>
+              <option value="yukchi">Yukchi</option>
+              <option value="furachi">Furachi</option>
+            </select>
+          </div>
+        </div>
+        <div id="users-body">
+          <div class="loading"><div class="spinner"></div><br>Yuklanmoqda...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div id="page-orders" class="page">
+      <div class="table-card">
+        <div class="table-header">
+          <span class="table-title">Barcha buyurtmalar</span>
+          <div class="table-actions">
+            <input class="search-input" id="order-search" placeholder="Qidirish..." oninput="filterOrders()">
+            <select class="filter-select" id="status-filter" onchange="filterOrders()">
+              <option value="">Barcha status</option>
+              <option value="pending">Kutilmoqda</option>
+              <option value="accepted">Qabul qilindi</option>
+              <option value="in_transit">Yo'lda</option>
+              <option value="delivered">Yetkazildi</option>
+              <option value="cancelled">Bekor qilindi</option>
+            </select>
+          </div>
+        </div>
+        <div id="orders-body">
+          <div class="loading"><div class="spinner"></div><br>Yuklanmoqda...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = 'https://api.smart-tools.uk/api/v1/admin';
+let adminKey = '';
+let allUsers = [];
+let allOrders = [];
+let ordersChart, usersChart;
+
+function login() {
+  const key = document.getElementById('key-input').value.trim();
+  if (!key) return;
+  adminKey = key;
+  fetchStats().then(data => {
+    if (data) {
+      localStorage.setItem('yk_admin_key', key);
+      document.getElementById('login-overlay').style.display = 'none';
+      loadDashboard();
+    } else {
+      document.getElementById('login-err').style.display = 'block';
+      adminKey = '';
+    }
+  });
+}
+
+function logout() {
+  localStorage.removeItem('yk_admin_key');
+  adminKey = '';
+  document.getElementById('login-overlay').style.display = 'flex';
+  document.getElementById('key-input').value = '';
+}
+
+async function apiFetch(path, options = {}) {
+  try {
+    const res = await fetch(API + path, {
+      ...options,
+      headers: { 'X-Admin-Key': adminKey, 'Content-Type': 'application/json', ...(options.headers || {}) },
+    });
+    if (res.status === 403) return null;
+    if (!res.ok) throw new Error(res.statusText);
+    return await res.json();
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+}
+
+async function fetchStats() { return apiFetch('/stats'); }
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  const titles = { dashboard: 'Dashboard', users: 'Foydalanuvchilar', orders: 'Buyurtmalar' };
+  document.getElementById('page-title').textContent = titles[name] || name;
+  if (name === 'users') loadUsers();
+  if (name === 'orders') loadOrders();
+}
+
+// ─── Dashboard ───────────────────────────────────────────────────────────────
+
+async function loadDashboard() {
+  const stats = await fetchStats();
+  if (!stats) return;
+  renderStats(stats);
+  renderCharts(stats);
+  loadRecentOrders();
+}
+
+function renderStats(s) {
+  const cards = [
+    { label: 'Jami foydalanuvchi', val: s.total_users, icon: '👥', cls: 'blue' },
+    { label: 'Yukchilar', val: s.yukchis, icon: '📦', cls: 'purple' },
+    { label: 'Furachilар', val: s.furachis, icon: '🚛', cls: 'green' },
+    { label: 'Jami buyurtma', val: s.total_orders, icon: '📋', cls: 'orange' },
+    { label: 'Faol buyurtma', val: s.active_orders, icon: '⚡', cls: 'blue' },
+    { label: 'Yetkazildi', val: s.delivered_orders, icon: '✅', cls: 'green' },
+  ];
+  document.getElementById('stats-grid').innerHTML = cards.map(c => `
+    <div class="stat-card ${c.cls}">
+      <div class="stat-icon">${c.icon}</div>
+      <div class="stat-label">${c.label}</div>
+      <div class="stat-val">${c.val}</div>
+    </div>
+  `).join('');
+}
+
+function renderCharts(s) {
+  // Orders pie
+  const octx = document.getElementById('orders-chart').getContext('2d');
+  if (ordersChart) ordersChart.destroy();
+  ordersChart = new Chart(octx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Faol', 'Yetkazildi', 'Bekor'],
+      datasets: [{ data: [s.active_orders, s.delivered_orders, s.cancelled_orders],
+        backgroundColor: ['#2563EB','#10B981','#EF4444'], borderWidth: 0, hoverOffset: 6 }]
+    },
+    options: { cutout: '65%', plugins: { legend: { position: 'bottom' } } }
+  });
+
+  // Users bar
+  const uctx = document.getElementById('users-chart').getContext('2d');
+  if (usersChart) usersChart.destroy();
+  usersChart = new Chart(uctx, {
+    type: 'bar',
+    data: {
+      labels: ['Yukchi', 'Furachi'],
+      datasets: [{ data: [s.yukchis, s.furachis],
+        backgroundColor: ['#2563EB','#10B981'], borderRadius: 10, borderSkipped: false }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+  });
+}
+
+async function loadRecentOrders() {
+  const orders = await apiFetch('/orders');
+  if (!orders) return;
+  const recent = orders.slice(0, 10);
+  if (recent.length === 0) {
+    document.getElementById('recent-orders-body').innerHTML = '<div class="empty"><div class="empty-icon">📭</div>Buyurtma yo\'q</div>';
+    return;
+  }
+  document.getElementById('recent-orders-body').innerHTML = `
+    <table><thead><tr>
+      <th>#</th><th>Yo'nalish</th><th>Status</th><th>Yukchi</th><th>Furachi</th><th>Narx</th><th>Sana</th>
+    </tr></thead><tbody>
+    ${recent.map(o => `<tr>
+      <td><b>YK-${o.id}</b></td>
+      <td>${o.from_city} &rarr; ${o.to_city}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td>${o.yukchi ? o.yukchi.name || '—' : '—'}</td>
+      <td>${o.furachi ? o.furachi.name || '—' : '<span style="color:#94A3B8">Kutilmoqda</span>'}</td>
+      <td><b style="color:#2563EB">${o.price ? o.price + ' so\'m' : '—'}</b></td>
+      <td style="color:#64748B">${fmtDate(o.created_at)}</td>
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+// ─── Users ───────────────────────────────────────────────────────────────────
+
+async function loadUsers() {
+  document.getElementById('users-body').innerHTML = '<div class="loading"><div class="spinner"></div><br>Yuklanmoqda...</div>';
+  allUsers = await apiFetch('/users') || [];
+  renderUsers(allUsers);
+}
+
+function filterUsers() {
+  const q = document.getElementById('user-search').value.toLowerCase();
+  const role = document.getElementById('role-filter').value;
+  let filtered = allUsers;
+  if (role) filtered = filtered.filter(u => u.role === role);
+  if (q) filtered = filtered.filter(u =>
+    (u.first_name + ' ' + u.last_name + ' ' + u.phone).toLowerCase().includes(q)
+  );
+  renderUsers(filtered);
+}
+
+function renderUsers(users) {
+  if (!users.length) {
+    document.getElementById('users-body').innerHTML = '<div class="empty"><div class="empty-icon">👤</div>Foydalanuvchi topilmadi</div>';
+    return;
+  }
+  document.getElementById('users-body').innerHTML = `
+    <table><thead><tr>
+      <th>#</th><th>Ism</th><th>Telefon</th><th>Rol</th><th>Profil</th><th>Shahar</th><th>Qo'shilgan</th>
+    </tr></thead><tbody>
+    ${users.map(u => `<tr>
+      <td><b>${u.id}</b></td>
+      <td>${u.first_name} ${u.last_name}</td>
+      <td style="font-family:monospace">${u.phone}</td>
+      <td>${u.role ? `<span class="role-${u.role}">${u.role === 'yukchi' ? 'Yukchi' : 'Furachi'}</span>` : '—'}</td>
+      <td>${u.is_profile_complete ? '<span style="color:#10B981;font-weight:700">To\'liq</span>' : '<span style="color:#F59E0B;font-weight:700">Tugallanmagan</span>'}</td>
+      <td>${u.from_city || '—'}</td>
+      <td style="color:#64748B">${fmtDate(u.created_at)}</td>
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+// ─── Orders ──────────────────────────────────────────────────────────────────
+
+async function loadOrders() {
+  document.getElementById('orders-body').innerHTML = '<div class="loading"><div class="spinner"></div><br>Yuklanmoqda...</div>';
+  allOrders = await apiFetch('/orders') || [];
+  renderOrders(allOrders);
+}
+
+function filterOrders() {
+  const q = document.getElementById('order-search').value.toLowerCase();
+  const st = document.getElementById('status-filter').value;
+  let filtered = allOrders;
+  if (st) filtered = filtered.filter(o => o.status === st);
+  if (q) filtered = filtered.filter(o =>
+    (o.from_city + ' ' + o.to_city + ' ' + (o.yukchi?.name || '') + ' ' + (o.furachi?.name || '') + ' YK-' + o.id).toLowerCase().includes(q)
+  );
+  renderOrders(filtered);
+}
+
+function renderOrders(orders) {
+  if (!orders.length) {
+    document.getElementById('orders-body').innerHTML = '<div class="empty"><div class="empty-icon">📦</div>Buyurtma topilmadi</div>';
+    return;
+  }
+  document.getElementById('orders-body').innerHTML = `
+    <table><thead><tr>
+      <th>#</th><th>Yo'nalish</th><th>Status</th><th>Yukchi</th><th>Furachi</th><th>Narx</th><th>Sana</th><th>Amal</th>
+    </tr></thead><tbody>
+    ${orders.map(o => `<tr>
+      <td><b>YK-${o.id}</b></td>
+      <td><b>${o.from_city}</b> &rarr; <b>${o.to_city}</b>${o.cargo_type ? '<br><span style="font-size:11px;color:#94A3B8">'+o.cargo_type+'</span>' : ''}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td>${o.yukchi ? `<div style="font-weight:600">${o.yukchi.name||'—'}</div><div style="font-size:11px;color:#94A3B8">${o.yukchi.phone}</div>` : '—'}</td>
+      <td>${o.furachi ? `<div style="font-weight:600">${o.furachi.name||'—'}</div><div style="font-size:11px;color:#94A3B8">${o.furachi.phone}</div>` : '<span style="color:#94A3B8">Kutilmoqda</span>'}</td>
+      <td><b style="color:#2563EB">${o.price ? o.price + ' so\'m' : '—'}</b>${o.weight_kg ? '<br><span style="font-size:11px;color:#94A3B8">'+o.weight_kg+' kg</span>' : ''}</td>
+      <td style="color:#64748B;white-space:nowrap">${fmtDate(o.created_at)}</td>
+      <td>
+        <select class="status-select" onchange="updateStatus(${o.id}, this.value)">
+          <option value="pending"   ${o.status==='pending'   ?'selected':''}>Kutilmoqda</option>
+          <option value="accepted"  ${o.status==='accepted'  ?'selected':''}>Qabul qilindi</option>
+          <option value="in_transit"${o.status==='in_transit'?'selected':''}>Yo'lda</option>
+          <option value="delivered" ${o.status==='delivered' ?'selected':''}>Yetkazildi</option>
+          <option value="cancelled" ${o.status==='cancelled' ?'selected':''}>Bekor qilindi</option>
+        </select>
+      </td>
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+async function updateStatus(orderId, status) {
+  const res = await apiFetch('/orders/' + orderId + '/status', {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+  if (res?.ok) {
+    const o = allOrders.find(x => x.id === orderId);
+    if (o) o.status = status;
+  }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function statusBadge(s) {
+  const map = {
+    pending:    ['Kutilmoqda',    's-pending'],
+    accepted:   ['Qabul qilindi', 's-accepted'],
+    in_transit: ["Yo'lda",        's-in_transit'],
+    delivered:  ['Yetkazildi',    's-delivered'],
+    cancelled:  ['Bekor qilindi', 's-cancelled'],
+  };
+  const [label, cls] = map[s] || [s, ''];
+  return `<span class="status-badge ${cls}">${label}</span>`;
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('uz-UZ', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+
+async function refreshData() {
+  const cur = document.querySelector('.page.active')?.id?.replace('page-', '');
+  if (cur === 'dashboard') loadDashboard();
+  else if (cur === 'users') loadUsers();
+  else if (cur === 'orders') loadOrders();
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+
+window.onload = () => {
+  const saved = localStorage.getItem('yk_admin_key');
+  if (saved) {
+    adminKey = saved;
+    fetchStats().then(d => {
+      if (d) {
+        document.getElementById('login-overlay').style.display = 'none';
+        loadDashboard();
+      } else {
+        adminKey = '';
+        localStorage.removeItem('yk_admin_key');
+      }
+    });
+  }
+  // Auto-refresh every 60 seconds
+  setInterval(() => { if (adminKey) refreshData(); }, 60000);
+};
+</script>
+</body>
+</html>

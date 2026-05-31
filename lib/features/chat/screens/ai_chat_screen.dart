@@ -131,13 +131,13 @@ class AIChatScreen extends StatelessWidget {
                     children: [
                       _QuickChip(
                         icon: Icons.location_on,
-                        label: '📍 Toshkent',
+                        label: 'Toshkent',
                         isActive: true,
                       ),
                       const SizedBox(width: 12),
-                      _QuickChip(icon: Icons.inventory, label: '📦 Yengil'),
+                      _QuickChip(icon: Icons.inventory, label: 'Yengil'),
                       const SizedBox(width: 12),
-                      _QuickChip(icon: Icons.local_shipping, label: '🚚 Katta'),
+                      _QuickChip(icon: Icons.local_shipping, label: 'Katta'),
                     ],
                   ),
                 ),

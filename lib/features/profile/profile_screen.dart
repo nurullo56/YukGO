@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:yukgo_flutter/core/theme/app_theme.dart';
 import 'package:yukgo_flutter/core/utils/user_session.dart';
+import 'package:yukgo_flutter/core/services/token_storage.dart';
 import 'package:yukgo_flutter/core/widgets/app_bottom_nav.dart';
 import 'package:yukgo_flutter/features/profile/widgets/payment_methods_sheet.dart';
 import 'package:yukgo_flutter/features/profile/widgets/language_sheet.dart';
 import 'package:yukgo_flutter/features/profile/widgets/notifications_sheet.dart';
 import 'package:yukgo_flutter/features/profile/screens/edit_profile_screen.dart';
+import 'package:yukgo_flutter/features/onboarding/screens/onboarding_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -39,6 +41,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _onThemeChange() => setState(() {});
   void _onNotifChange() => setState(() {});
+
+  void _startVerification(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(children: [
+          Icon(Icons.verified_user_outlined, color: AppTheme.primary),
+          const SizedBox(width: 10),
+          const Text('Verifikatsiya'),
+        ]),
+        content: const Text(
+          "Hisobingizni verifikatsiyadan o'tkazish uchun shaxsingizni tasdiqlovchi hujjat (Passport/ID) rasmini yuklashingiz kerak.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Bekor qilish'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text("Hujjat yuklash tizimi tez orada ishga tushadi!"),
+                behavior: SnackBarBehavior.floating,
+              ));
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Boshlash'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Chiqish'),
+        content: const Text('Hisobdan chiqmoqchimisiz?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Bekor qilish'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Chiqish', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await TokenStorage.clear();
+    UserSession.isLoggedIn = false;
+    UserSession.userId = 0;
+    UserSession.role = 'yukchi';
+    UserSession.firstName = '';
+    UserSession.lastName = '';
+    UserSession.phone = '';
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+      (_) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +168,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        UserSession.isYukchi ? '📦 Yukchi' : '🚚 Furachi',
+                        UserSession.isYukchi ? 'Yukchi' : 'Furachi',
                         style: const TextStyle(color: Colors.white, fontSize: 13),
                       ),
                     ),
@@ -126,7 +199,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           if (mounted) setState(() {});
                         },
                           iconColor: iconColor, textColor: textPrimary),
-                      _SettingsItem(Icons.verified_user_outlined, 'Verifikatsiya', () {}, 
+                      _SettingsItem(Icons.verified_user_outlined, 'Verifikatsiya', () => _startVerification(context),
                           iconColor: iconColor, textColor: textPrimary),
                       _SettingsItem(Icons.credit_card, 'To\'lov usullari', () {
                           showModalBottomSheet(
@@ -196,7 +269,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ValueListenableBuilder<String>(
                               valueListenable: UserSession.language,
                               builder: (context, lang, _) {
-                                final flags = {'uz': '🇺🇿', 'ru': '🇷🇺', 'en': '🇬🇧'};
+                                final flags = {'uz': 'UZ', 'ru': 'RU', 'en': 'EN'};
                                 return _SettingsItem(
                                   Icons.language,
                                   'Til  ${flags[lang]}',
@@ -247,7 +320,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 24),
                   OutlinedButton.icon(
-                    onPressed: () {},
+                    onPressed: () => _confirmLogout(context),
                     icon: const Icon(Icons.logout, color: Colors.red),
                     label: const Text('Chiqish', style: TextStyle(color: Colors.red)),
                     style: OutlinedButton.styleFrom(

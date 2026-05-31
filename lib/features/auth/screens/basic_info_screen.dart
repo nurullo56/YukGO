@@ -76,7 +76,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      Text("Asosiy ma'lumotlar 📋", style: GoogleFonts.inter(
+                      Text("Asosiy ma'lumotlar", style: GoogleFonts.inter(
                         fontSize: 26, fontWeight: FontWeight.w800, color: context.textPrimary,
                       )),
                       const SizedBox(height: 8),

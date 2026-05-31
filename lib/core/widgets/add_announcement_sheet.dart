@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:yukgo_flutter/core/theme/app_theme.dart';
+import 'package:yukgo_flutter/core/theme/theme_ext.dart';
 
 class AddAnnouncementSheet extends StatefulWidget {
   const AddAnnouncementSheet({super.key});
@@ -30,9 +31,9 @@ class _AddAnnouncementSheetState extends State<AddAnnouncementSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: context.cardColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       padding: EdgeInsets.only(
         left: 24, right: 24, top: 16,
@@ -67,23 +68,25 @@ class _AddAnnouncementSheetState extends State<AddAnnouncementSheet> {
               const SizedBox(width: 12),
               Text(
                 "E'lon qo'yish",
-                style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700),
+                style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: context.textPrimary),
               ),
             ],
           ),
           const SizedBox(height: 24),
 
           // Mashina turi
-          Text('Mashina turi', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey.shade600)),
+          Text('Mashina turi', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: context.textMuted)),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(14)),
+            decoration: BoxDecoration(color: context.inputColor, borderRadius: BorderRadius.circular(14)),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _selectedTruck,
                 isExpanded: true,
-                items: _trucks.map((t) => DropdownMenuItem(value: t, child: Text(t, style: GoogleFonts.inter(fontSize: 14)))).toList(),
+                dropdownColor: context.cardColor,
+                style: GoogleFonts.inter(fontSize: 14, color: context.textPrimary),
+                items: _trucks.map((t) => DropdownMenuItem(value: t, child: Text(t, style: GoogleFonts.inter(fontSize: 14, color: context.textPrimary)))).toList(),
                 onChanged: (v) => setState(() => _selectedTruck = v!),
               ),
             ),
@@ -91,16 +94,18 @@ class _AddAnnouncementSheetState extends State<AddAnnouncementSheet> {
           const SizedBox(height: 16),
 
           // Sig'imi
-          Text("Sig'imi", style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey.shade600)),
+          Text("Sig'imi", style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: context.textMuted)),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(14)),
+            decoration: BoxDecoration(color: context.inputColor, borderRadius: BorderRadius.circular(14)),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _selectedCapacity,
                 isExpanded: true,
-                items: _capacities.map((c) => DropdownMenuItem(value: c, child: Text(c, style: GoogleFonts.inter(fontSize: 14)))).toList(),
+                dropdownColor: context.cardColor,
+                style: GoogleFonts.inter(fontSize: 14, color: context.textPrimary),
+                items: _capacities.map((c) => DropdownMenuItem(value: c, child: Text(c, style: GoogleFonts.inter(fontSize: 14, color: context.textPrimary)))).toList(),
                 onChanged: (v) => setState(() => _selectedCapacity = v!),
               ),
             ),
@@ -153,18 +158,20 @@ class _AddAnnouncementSheetState extends State<AddAnnouncementSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey.shade600)),
+        Text(label, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: context.textMuted)),
         const SizedBox(height: 8),
         TextField(
           controller: ctrl,
           keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-          style: GoogleFonts.inter(fontSize: 14),
+          style: GoogleFonts.inter(fontSize: 14, color: context.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: Icon(icon, size: 18, color: Colors.grey),
+            hintStyle: GoogleFonts.inter(color: context.textMuted),
+            prefixIcon: Icon(icon, size: 18, color: context.textMuted),
             filled: true,
-            fillColor: const Color(0xFFF1F5F9),
+            fillColor: context.inputColor,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.primary, width: 2)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           ),
         ),

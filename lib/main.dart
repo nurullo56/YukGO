@@ -19,6 +19,7 @@ import 'package:yukgo_flutter/features/driver/models/order_model.dart';
 import 'package:yukgo_flutter/features/shipper/screens/driver_list_screen.dart';
 import 'package:yukgo_flutter/features/shipper/screens/driver_profile_screen.dart';
 import 'package:yukgo_flutter/features/shipper/screens/order_tracking_screen.dart';
+import 'package:yukgo_flutter/features/shipper/screens/my_orders_screen.dart';
 import 'package:yukgo_flutter/features/shipper/screens/shipper_chat_screen.dart';
 import 'package:yukgo_flutter/features/furachi/screens/furachi_home_screen.dart';
 import 'package:yukgo_flutter/features/chat/screens/chat_screen.dart';
@@ -48,7 +49,7 @@ Route<dynamic> _generateRoute(RouteSettings s) {
     '/furachi-home':    (_) => const FurachiHomeScreen(),
     '/driver-list':     (_) => const DriverListScreen(),
     '/driver-profile':  (_) => const DriverProfileScreen(),
-    '/order-tracking':  (_) => const OrderTrackingScreen(),
+    '/order-tracking':  (_) => const MyOrdersScreen(),
     '/order-detail':    (_) {
       final order = s.arguments as OrderModel? ?? const OrderModel();
       return OrderDetailScreen(order: order);

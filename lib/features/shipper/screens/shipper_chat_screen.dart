@@ -216,11 +216,11 @@ class _ShipperChatScreenState extends State<ShipperChatScreen> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildActionChip("📍 Toshkent", true),
+                _buildActionChip("Toshkent", true),
                 const SizedBox(width: 12),
-                _buildActionChip("📦 Yengil", false),
+                _buildActionChip("Yengil", false),
                 const SizedBox(width: 12),
-                _buildActionChip("🚚 Katta", false),
+                _buildActionChip("Katta", false),
               ],
             ),
           ),

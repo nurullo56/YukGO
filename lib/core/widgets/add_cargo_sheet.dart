@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:yukgo_flutter/core/theme/app_theme.dart';
+import 'package:yukgo_flutter/core/theme/theme_ext.dart';
 
 class AddCargoSheet extends StatefulWidget {
   const AddCargoSheet({super.key});
@@ -30,9 +31,9 @@ class _AddCargoSheetState extends State<AddCargoSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: context.cardColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       padding: EdgeInsets.only(
         left: 24, right: 24, top: 16,
@@ -67,26 +68,28 @@ class _AddCargoSheetState extends State<AddCargoSheet> {
               const SizedBox(width: 12),
               Text(
                 'Yuk e\'lon qilish',
-                style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700),
+                style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: context.textPrimary),
               ),
             ],
           ),
           const SizedBox(height: 24),
 
           // Yuk turi
-          Text('Yuk turi', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey.shade600)),
+          Text('Yuk turi', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: context.textMuted)),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
+              color: context.inputColor,
               borderRadius: BorderRadius.circular(14),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _selectedType,
                 isExpanded: true,
-                items: _types.map((t) => DropdownMenuItem(value: t, child: Text(t, style: GoogleFonts.inter(fontSize: 14)))).toList(),
+                dropdownColor: context.cardColor,
+                style: GoogleFonts.inter(fontSize: 14, color: context.textPrimary),
+                items: _types.map((t) => DropdownMenuItem(value: t, child: Text(t, style: GoogleFonts.inter(fontSize: 14, color: context.textPrimary)))).toList(),
                 onChanged: (v) => setState(() => _selectedType = v!),
               ),
             ),
@@ -146,18 +149,20 @@ class _AddCargoSheetState extends State<AddCargoSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey.shade600)),
+        Text(label, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: context.textMuted)),
         const SizedBox(height: 8),
         TextField(
           controller: ctrl,
           keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-          style: GoogleFonts.inter(fontSize: 14),
+          style: GoogleFonts.inter(fontSize: 14, color: context.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: Icon(icon, size: 18, color: Colors.grey),
+            hintStyle: GoogleFonts.inter(color: context.textMuted),
+            prefixIcon: Icon(icon, size: 18, color: context.textMuted),
             filled: true,
-            fillColor: const Color(0xFFF1F5F9),
+            fillColor: context.inputColor,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.primary, width: 2)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           ),
         ),

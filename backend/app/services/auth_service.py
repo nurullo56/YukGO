@@ -181,7 +181,7 @@ class AuthService:
         )
 
         code = str(random.randint(100000, 999999))
-        await redis.setex(f"otp:{code}", 300, access_token)
+        await redis.setex(f"otp:{code}", 600, access_token)  # 10 daqiqa
 
         return PhoneLoginResponse(code=code)
 

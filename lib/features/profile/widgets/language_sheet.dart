@@ -15,9 +15,9 @@ class _LanguageSheetState extends State<LanguageSheet> {
   String _selected = UserSession.language.value;
 
   static const _languages = [
-    {'code': 'uz', 'flag': '🇺🇿', 'name': "O'zbek", 'native': "O'zbek tili"},
-    {'code': 'ru', 'flag': '🇷🇺', 'name': 'Русский', 'native': 'Русский язык'},
-    {'code': 'en', 'flag': '🇬🇧', 'name': 'English', 'native': 'English language'},
+    {'code': 'uz', 'flag': 'UZ', 'name': "O'zbek", 'native': "O'zbek tili"},
+    {'code': 'ru', 'flag': 'RU', 'name': 'Rus', 'native': 'Русский язык'},
+    {'code': 'en', 'flag': 'EN', 'name': 'English', 'native': 'English language'},
   ];
 
   @override
@@ -146,8 +146,18 @@ class _LangCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Bayroq emoji
-            Text(flag, style: const TextStyle(fontSize: 32)),
+            // Til kodi (flag emoji o'rniga — encoding muammo yo'q)
+            Container(
+              width: 44, height: 44,
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Text(flag, style: GoogleFonts.inter(
+                fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.primary,
+              )),
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(

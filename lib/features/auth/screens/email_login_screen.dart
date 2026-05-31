@@ -80,7 +80,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
               ),
               const SizedBox(height: 40),
 
-              Text("Xush kelibsiz! 👋", style: GoogleFonts.inter(
+              Text("Xush kelibsiz!", style: GoogleFonts.inter(
                 fontSize: 28, fontWeight: FontWeight.w800, color: context.textPrimary,
               )),
               const SizedBox(height: 8),
@@ -145,9 +145,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
               SizedBox(
                 width: double.infinity, height: 56,
                 child: ElevatedButton.icon(
-                  onPressed: () async {
-                    await TelegramAuthService.openTelegramBot();
-                    if (!mounted) return;
+                  onPressed: () {
                     Navigator.push(context, MaterialPageRoute(
                       builder: (_) => const TelegramOtpScreen(token: ''),
                     ));

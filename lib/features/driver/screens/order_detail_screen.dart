@@ -2,12 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:yukgo_flutter/core/theme/app_theme.dart';
 import 'package:yukgo_flutter/core/theme/theme_ext.dart';
+import 'package:yukgo_flutter/core/services/api_service.dart';
 import 'package:yukgo_flutter/features/driver/models/order_model.dart';
 
-class OrderDetailScreen extends StatelessWidget {
+class OrderDetailScreen extends StatefulWidget {
   final OrderModel order;
 
   const OrderDetailScreen({super.key, required this.order});
+
+  @override
+  State<OrderDetailScreen> createState() => _OrderDetailScreenState();
+}
+
+class _OrderDetailScreenState extends State<OrderDetailScreen> {
+  bool _loading = false;
+
+  void _acceptOrder() async {
+    setState(() => _loading = true);
+    try {
+      await ApiService.acceptOrder(widget.order.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Buyurtma muvaffaqiyatli qabul qilindi!",
+            style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        backgroundColor: Colors.green.shade600,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ));
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Xatolik yuz berdi: ${e.toString()}",
+            style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        backgroundColor: Colors.red.shade400,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _rejectOrder() => Navigator.pop(context, false);
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +97,7 @@ class OrderDetailScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("Buyurtma tafsilotlari", style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold)),
-              Text("ID: #${order.id}", style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+              Text("ID: #${widget.order.id}", style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
             ],
           ),
         ],
@@ -77,7 +114,7 @@ class OrderDetailScreen extends StatelessWidget {
       child: Stack(
         children: [
           Image.network(
-            order.mapUrl ?? "https://yukchi.app/api/image-search?query=city-map-route-line&w=600&h=400&seed=88",
+            widget.order.mapUrl ?? "https://yukchi.app/api/image-search?query=city-map-route-line&w=600&h=400&seed=88",
             fit: BoxFit.cover, 
             width: double.infinity,
             errorBuilder: (context, error, stackTrace) => Container(
@@ -94,7 +131,7 @@ class OrderDetailScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(color: Colors.white.withOpacity(0.9), borderRadius: BorderRadius.circular(12)),
-              child: Text("${order.distance} km", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+              child: Text("${widget.order.distance} km", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
             ),
           ),
         ],
@@ -127,7 +164,7 @@ class OrderDetailScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text("YUK BERUVCHI", style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
-                          Text(order.clientName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          Text(widget.order.clientName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         ],
                       ),
                     ],
@@ -150,12 +187,12 @@ class OrderDetailScreen extends StatelessWidget {
             _buildCard(context,
               child: Column(
                 children: [
-                  _addressRow(Icons.circle, "Olish (Pickup)", order.pickupAddress, AppTheme.primary),
+                  _addressRow(Icons.circle, "Olish (Pickup)", widget.order.pickupAddress, AppTheme.primary),
                   const Padding(
                     padding: EdgeInsets.only(left: 11),
                     child: SizedBox(height: 20, child: VerticalDivider(thickness: 2, color: Color(0xFFE2E8F0))),
                   ),
-                  _addressRow(Icons.location_on, "Yetkazish (Drop-off)", order.dropoffAddress, Colors.red),
+                  _addressRow(Icons.location_on, "Yetkazish (Drop-off)", widget.order.dropoffAddress, Colors.red),
                 ],
               ),
             ),
@@ -169,9 +206,9 @@ class OrderDetailScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      _gridItem(Icons.inventory_2_outlined, "Turi", order.cargoType),
-                      _gridItem(Icons.monitor_weight_outlined, "Vazni", order.weight),
-                      _gridItem(Icons.aspect_ratio, "Hajmi", order.volume),
+                      _gridItem(Icons.inventory_2_outlined, "Turi", widget.order.cargoType),
+                      _gridItem(Icons.monitor_weight_outlined, "Vazni", widget.order.weight),
+                      _gridItem(Icons.aspect_ratio, "Hajmi", widget.order.volume),
                     ],
                   ),
                 ],
@@ -195,7 +232,7 @@ class OrderDetailScreen extends StatelessWidget {
                       children: [
                         const Text("IZOH", style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
                         Text(
-                          "\"${order.comment}\"",
+                          "\"${widget.order.comment}\"",
                           style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
                         ),
                       ],
@@ -264,7 +301,7 @@ class OrderDetailScreen extends StatelessWidget {
           Expanded(
             flex: 1,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: _loading ? null : _rejectOrder,
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.cardColor,
                 foregroundColor: Colors.red,
@@ -279,7 +316,7 @@ class OrderDetailScreen extends StatelessWidget {
           Expanded(
             flex: 2,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: _loading ? null : _acceptOrder,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primary,
                 foregroundColor: Colors.white,
@@ -287,7 +324,9 @@ class OrderDetailScreen extends StatelessWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 elevation: 10, shadowColor: AppTheme.primary.withOpacity(0.4),
               ),
-              child: const Text("Qabul qilish", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              child: _loading
+                  ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5)
+                  : const Text("Qabul qilish", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ),
           ),
         ],

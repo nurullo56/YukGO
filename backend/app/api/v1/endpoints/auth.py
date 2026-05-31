@@ -1,7 +1,7 @@
 """
 Auth API endpoints
 """
-from fastapi import APIRouter, Depends, HTTPException, Header, status
+from fastapi import APIRouter, Depends, HTTPException, Header, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.services.auth_service import AuthService
@@ -18,6 +18,20 @@ import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+# Rate limiter — `pip install slowapi` kerak
+try:
+    from slowapi import Limiter
+    from slowapi.util import get_remote_address
+    _limiter = Limiter(key_func=get_remote_address)
+    def _limit(rule: str):
+        return _limiter.limit(rule)
+except ImportError:
+    # slowapi o'rnatilmagan — limit yo'q (development rejimi)
+    def _limit(rule: str):  # type: ignore[misc]
+        def decorator(func):
+            return func
+        return decorator
 
 
 @router.post("/init", response_model=TokenInitResponse)
@@ -60,7 +74,9 @@ async def verify_phone(
 
 
 @router.post("/phone-login", response_model=PhoneLoginResponse)
+@_limit("5/minute")
 async def phone_login(
+    http_request: Request,
     request: PhoneLoginRequest,
     db: AsyncSession = Depends(get_db)
 ):
@@ -73,7 +89,12 @@ async def phone_login(
 
 
 @router.post("/verify-code", response_model=VerifyCodeResponse)
-async def verify_code(request: VerifyCodeRequest, db: AsyncSession = Depends(get_db)):
+@_limit("10/minute")
+async def verify_code(
+    http_request: Request,
+    request: VerifyCodeRequest,
+    db: AsyncSession = Depends(get_db)
+):
     """Flutter'dan: Kod → JWT token ber"""
     try:
         return await AuthService.verify_code(request.code, db)

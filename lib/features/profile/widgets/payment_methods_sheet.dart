@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:yukgo_flutter/core/theme/app_theme.dart';
 import 'package:yukgo_flutter/core/theme/theme_ext.dart';
+import 'package:yukgo_flutter/features/payment/screens/card_payment_screen.dart';
+import 'package:yukgo_flutter/features/payment/screens/app_payment_screen.dart';
 
 class PaymentMethodsSheet extends StatefulWidget {
   const PaymentMethodsSheet({super.key});
@@ -11,7 +13,17 @@ class PaymentMethodsSheet extends StatefulWidget {
 }
 
 class _PaymentMethodsSheetState extends State<PaymentMethodsSheet> {
-  String? _selected; // 'payme' | 'uzum'
+  String? _selected;
+
+  static const _methods = [
+    (id: 'payme',   name: 'Payme',      desc: "O'zbekiston to'lov tizimi",  asset: 'assets/images/payme_logo.png',   fb: 'P', color: Color(0xFF00C2C2)),
+    (id: 'click',   name: 'Click',      desc: "Tez va qulay to'lov",         asset: 'assets/images/click_logo.png',   fb: 'C', color: Color(0xFF1A6BFF)),
+    (id: 'uzum',    name: 'Uzum Bank',  desc: 'Raqamli bank xizmatlari',     asset: 'assets/images/uzum_logo.png',    fb: 'U', color: Color(0xFF6E30F0)),
+    (id: 'humo',    name: 'Humo',       desc: "Milliy to'lov tizimi",        asset: 'assets/images/humo_logo.png',    fb: 'H', color: Color(0xFF2C4770)),
+    (id: 'uzcard',  name: 'UzCard',     desc: "Milliy bank kartasi",         asset: 'assets/images/uzcard_logo.png',  fb: 'Z', color: Color(0xFF0057A8)),
+    (id: 'visa',       name: 'Visa',       desc: "Xalqaro to'lov tizimi",    asset: 'assets/images/visa_logo.png',       fb: 'V', color: Color(0xFF1A1F71)),
+    (id: 'mastercard', name: 'Mastercard', desc: "Xalqaro to'lov tizimi",    asset: 'assets/images/mastercard_logo.png', fb: 'M', color: Color(0xFFEB001B)),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -20,99 +32,84 @@ class _PaymentMethodsSheetState extends State<PaymentMethodsSheet> {
         color: context.cardColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 36),
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Handle
-          Center(
-            child: Container(
-              width: 40, height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
+          // Header — qotib turadi
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(child: Container(
+                  width: 40, height: 4,
+                  decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
+                )),
+                const SizedBox(height: 20),
+                Text("To'lov usullari", style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: context.textPrimary)),
+                Text("To'lov tizimini tanlang", style: GoogleFonts.inter(fontSize: 13, color: context.textMuted)),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+
+          // Scroll bo'ladigan ro'yxat — max balandlik ekranning 55%
+          ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.55),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                children: _methods.map((m) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _PaymentCard(
+                    isSelected: _selected == m.id,
+                    onTap: () => setState(() => _selected = m.id),
+                    logo: _Logo(asset: m.asset, fallback: m.fb, color: m.color),
+                    name: m.name,
+                    desc: m.desc,
+                    color: m.color,
+                  ),
+                )).toList(),
               ),
             ),
           ),
-          const SizedBox(height: 20),
 
-          Text(
-            "To'lov usullari",
-            style: GoogleFonts.inter(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: context.textPrimary,
-            ),
-          ),
-          Text(
-            "To'lov tizimini tanlang",
-            style: GoogleFonts.inter(fontSize: 13, color: context.textMuted),
-          ),
-          const SizedBox(height: 20),
-
-          // Payme
-          _PaymentCard(
-            isSelected: _selected == 'payme',
-            onTap: () => setState(() => _selected = 'payme'),
-            logo: _PaymeLogo(),
-            name: 'Payme',
-            desc: "O'zbekiston to'lov tizimi",
-            color: const Color(0xFF00AAFF),
-          ),
-          const SizedBox(height: 12),
-
-          // Uzum Bank
-          _PaymentCard(
-            isSelected: _selected == 'uzum',
-            onTap: () => setState(() => _selected = 'uzum'),
-            logo: _UzumLogo(),
-            name: 'Uzum Bank',
-            desc: 'Raqamli bank xizmatlari',
-            color: const Color(0xFF9B59B6),
-          ),
-          const SizedBox(height: 24),
-
-          SizedBox(
-            width: double.infinity,
-            height: 54,
-            child: ElevatedButton(
-              onPressed: _selected == null
-                  ? null
-                  : () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            _selected == 'payme'
-                                ? "Payme ulandi!"
-                                : "Uzum Bank ulandi!",
-                            style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                          ),
-                          backgroundColor: AppTheme.primary,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      );
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primary,
-                disabledBackgroundColor: context.inputColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+          // Ulash tugmasi — doim pastda
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+            child: SizedBox(
+              width: double.infinity, height: 54,
+              child: ElevatedButton(
+                onPressed: _selected == null ? null : () {
+                  final m = _methods.firstWhere((x) => x.id == _selected);
+                  Navigator.pop(context);
+                  if (m.id == 'visa' || m.id == 'mastercard') {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => CardPaymentScreen(paymentType: m.id),
+                    ));
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => AppPaymentScreen(
+                        methodId: m.id,
+                        methodName: m.name,
+                        asset: m.asset,
+                        color: m.color,
+                      ),
+                    ));
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  disabledBackgroundColor: context.inputColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
                 ),
-                elevation: 0,
-              ),
-              child: Text(
-                "Ulash",
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                child: Text("Ulash", style: GoogleFonts.inter(
+                  fontSize: 16, fontWeight: FontWeight.w700,
                   color: _selected == null ? context.textMuted : Colors.white,
-                ),
+                )),
               ),
             ),
           ),
@@ -214,50 +211,26 @@ class _PaymentCard extends StatelessWidget {
   }
 }
 
-// Payme logosi
-class _PaymeLogo extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: const Color(0xFF00AAFF),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Center(
-        child: Text(
-          'P',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w900,
-            fontSize: 18,
-          ),
-        ),
-      ),
-    );
-  }
-}
+class _Logo extends StatelessWidget {
+  final String asset;
+  final String fallback;
+  final Color color;
+  const _Logo({required this.asset, required this.fallback, required this.color});
 
-// Uzum Bank logosi
-class _UzumLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: const Color(0xFF9B59B6),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Center(
-        child: Text(
-          'U',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w900,
-            fontSize: 18,
-          ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.asset(
+        asset,
+        width: 32, height: 32,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => Container(
+          width: 32, height: 32,
+          color: color,
+          child: Center(child: Text(fallback, style: const TextStyle(
+            color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16,
+          ))),
         ),
       ),
     );

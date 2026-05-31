@@ -150,7 +150,7 @@ class ShipperAnalysisSheet extends StatelessWidget {
                     elevation: 8,
                     shadowColor: AppTheme.primary.withOpacity(0.4),
                   ),
-                  child: const Text("Haydovchi topish 🔍", 
+                  child: const Text("Haydovchi topish",
                     style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(height: 12),

@@ -4,6 +4,7 @@ import 'package:yukgo_flutter/core/theme/app_theme.dart';
 import 'package:yukgo_flutter/core/theme/theme_ext.dart';
 import 'package:yukgo_flutter/core/utils/user_session.dart';
 import 'package:yukgo_flutter/core/services/api_service.dart';
+import 'package:yukgo_flutter/core/services/token_storage.dart';
 import 'package:yukgo_flutter/features/auth/widgets/step_indicator.dart';
 import 'package:yukgo_flutter/features/auth/widgets/select_chip.dart';
 import 'package:yukgo_flutter/features/furachi/screens/furachi_home_screen.dart';
@@ -67,17 +68,21 @@ class _FurachiSetupScreenState extends State<FurachiSetupScreen> {
     UserSession.toRoutes = _toRoutes.toList();
     setState(() => _loading = true);
     try {
-      await ApiService.setupProfile({
-        'role': 'furachi',
-        'first_name': UserSession.firstName,
-        'last_name': UserSession.lastName,
-        'phone': UserSession.phone,
-        'truck_type': _truckType,
-        'capacity': _capacity,
-        'from_city': _fromCity,
-        'to_routes': _toRoutes.toList(),
-      });
+      final hasToken = await TokenStorage.hasToken();
+      if (hasToken) {
+        await ApiService.setupProfile({
+          'role': 'furachi',
+          'first_name': UserSession.firstName,
+          'last_name': UserSession.lastName,
+          'phone': UserSession.phone,
+          'truck_type': _truckType,
+          'capacity': _capacity,
+          'from_city': _fromCity,
+          'to_routes': _toRoutes.toList(),
+        });
+      }
       UserSession.isLoggedIn = true;
+      UserSession.role = 'furachi';
       if (!mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
@@ -127,13 +132,20 @@ class _FurachiSetupScreenState extends State<FurachiSetupScreen> {
                     const SizedBox(height: 32),
 
                     Row(children: [
-                      Text("🚚", style: const TextStyle(fontSize: 32)),
+                      Container(
+                        width: 48, height: 48,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(Icons.local_shipping_outlined, color: AppTheme.primary, size: 26),
+                      ),
                       const SizedBox(width: 12),
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text("Transport ma'lumotlari", style: GoogleFonts.inter(
                           fontSize: 22, fontWeight: FontWeight.w800, color: context.textPrimary,
                         )),
-                        Text("Bir marta to'ldiring — buyurtmalarda avtomatik ko'rinadi",
+                        Text("Bir marta to'ldiring, buyurtmalarda avtomatik ko'rinadi",
                           style: GoogleFonts.inter(fontSize: 12, color: context.textMuted, height: 1.4)),
                       ])),
                     ]),
@@ -215,7 +227,7 @@ class _FurachiSetupScreenState extends State<FurachiSetupScreen> {
                   ),
                   child: _loading
                       ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                      : Text("Ro'yxatdan o'tish ✓", style: GoogleFonts.inter(
+                      : Text("Ro'yxatdan o'tish", style: GoogleFonts.inter(
                     fontSize: 16, fontWeight: FontWeight.w700)),
                 ),
               ),

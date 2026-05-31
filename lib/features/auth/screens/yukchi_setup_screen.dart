@@ -4,6 +4,7 @@ import 'package:yukgo_flutter/core/theme/app_theme.dart';
 import 'package:yukgo_flutter/core/theme/theme_ext.dart';
 import 'package:yukgo_flutter/core/utils/user_session.dart';
 import 'package:yukgo_flutter/core/services/api_service.dart';
+import 'package:yukgo_flutter/core/services/token_storage.dart';
 import 'package:yukgo_flutter/features/auth/widgets/step_indicator.dart';
 import 'package:yukgo_flutter/features/auth/widgets/select_chip.dart';
 import 'package:yukgo_flutter/features/yukchi/screens/yukchi_home_screen.dart';
@@ -72,16 +73,20 @@ class _YukchiSetupScreenState extends State<YukchiSetupScreen> {
     UserSession.toRoutes = _toRoutes.toList();
     setState(() => _loading = true);
     try {
-      await ApiService.setupProfile({
-        'role': 'yukchi',
-        'first_name': UserSession.firstName,
-        'last_name': UserSession.lastName,
-        'phone': UserSession.phone,
-        'from_city': _fromCity,
-        'to_routes': _toRoutes.toList(),
-        'cargo_type': _cargoType,
-      });
+      final hasToken = await TokenStorage.hasToken();
+      if (hasToken) {
+        await ApiService.setupProfile({
+          'role': 'yukchi',
+          'first_name': UserSession.firstName,
+          'last_name': UserSession.lastName,
+          'phone': UserSession.phone,
+          'from_city': _fromCity,
+          'to_routes': _toRoutes.toList(),
+          'cargo_type': _cargoType,
+        });
+      }
       UserSession.isLoggedIn = true;
+      UserSession.role = 'yukchi';
       if (!mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
@@ -131,13 +136,20 @@ class _YukchiSetupScreenState extends State<YukchiSetupScreen> {
                     const SizedBox(height: 32),
 
                     Row(children: [
-                      const Text("\u{1F4E6}", style: TextStyle(fontSize: 32)),
+                      Container(
+                        width: 48, height: 48,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(Icons.inventory_2_outlined, color: AppTheme.primary, size: 26),
+                      ),
                       const SizedBox(width: 12),
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text("Yuk ma'lumotlari", style: GoogleFonts.inter(
                           fontSize: 22, fontWeight: FontWeight.w800, color: context.textPrimary,
                         )),
-                        Text("Bir marta to'ldiring \u{2014} keyingi buyurtmalarda tez bo'ladi",
+                        Text("Bir marta to'ldiring, keyingi buyurtmalarda tez bo'ladi",
                           style: GoogleFonts.inter(fontSize: 12, color: context.textMuted, height: 1.4)),
                       ])),
                     ]),
@@ -217,7 +229,7 @@ class _YukchiSetupScreenState extends State<YukchiSetupScreen> {
                   ),
                   child: _loading
                       ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                      : Text("Ro'yxatdan o'tish \u{270D}\u{FE0F}", style: GoogleFonts.inter(
+                      : Text("Ro'yxatdan o'tish", style: GoogleFonts.inter(
                     fontSize: 16, fontWeight: FontWeight.w700)),
                 ),
               ),

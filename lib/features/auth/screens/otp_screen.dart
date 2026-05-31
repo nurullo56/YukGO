@@ -52,10 +52,6 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   void _verify() async {
-    if (_code.length < 6) {
-      setState(() => _error = "6 raqamli kodni to'liq kiriting");
-      return;
-    }
     setState(() { _loading = true; _error = null; });
     await Future.delayed(const Duration(milliseconds: 800));
     setState(() => _loading = false);
@@ -88,7 +84,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              Text("Kodni kiriting 📧", style: GoogleFonts.inter(
+              Text("Kodni kiriting", style: GoogleFonts.inter(
                 fontSize: 26, fontWeight: FontWeight.w800, color: context.textPrimary,
               )),
               const SizedBox(height: 8),
@@ -96,7 +92,27 @@ class _OtpScreenState extends State<OtpScreen> {
                 "${widget.email} manziliga 6 raqamli kod yuborildi",
                 style: GoogleFonts.inter(fontSize: 14, color: context.textMuted, height: 1.5),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, color: AppTheme.primary, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "Demo: istalgan raqam kiriting yoki bo'sh qoldiring",
+                        style: GoogleFonts.inter(fontSize: 12, color: AppTheme.primary),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: List.generate(6, (i) => _OtpBox(

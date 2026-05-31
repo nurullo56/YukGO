@@ -6,6 +6,7 @@ import 'package:yukgo_flutter/core/utils/user_session.dart';
 import 'package:yukgo_flutter/core/services/api_service.dart';
 import 'package:yukgo_flutter/core/widgets/app_bottom_nav.dart';
 import 'package:yukgo_flutter/core/widgets/auth_guard.dart';
+import 'package:yukgo_flutter/core/services/fcm_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:yukgo_flutter/features/map/screens/route_map_screen.dart';
 
@@ -30,6 +31,7 @@ class _YukchiHomeScreenState extends State<YukchiHomeScreen> {
   void initState() {
     super.initState();
     _loadData();
+    FcmService.init().catchError((_) {});
   }
 
   Future<void> _loadData() async {
@@ -145,7 +147,7 @@ class _YukchiHomeScreenState extends State<YukchiHomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Salom, ${UserSession.firstName.isEmpty ? "Yukchi" : UserSession.firstName}! 👋',
+                Text('Salom, ${UserSession.firstName.isEmpty ? "Yukchi" : UserSession.firstName}!',
                     style: GoogleFonts.inter(fontSize: 13, color: context.textMuted)),
                 Text('Furachi toping', style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800, color: context.textPrimary)),
               ]),

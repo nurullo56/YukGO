@@ -34,6 +34,10 @@ deploy.py
 .env
 .env.local
 .env.deploy
+*.zip
+.claude/
+android/app/google-services.json
+backend/firebase-service-account.json
 .env.production
 **/.env
 **/.env.local
